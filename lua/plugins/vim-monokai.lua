@@ -1,0 +1,3 @@
+return {
+  "crusoexia/vim-monokai",
+}
