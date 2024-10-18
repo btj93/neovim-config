@@ -1,6 +1,4 @@
 return {
-  {
-    "iguanacucumber/magazine.nvim",
-    name = "nvim-cmp", -- Otherwise highlighting gets messed up
-  },
+  "hrsh7th/nvim-cmp",
+  url = "https://github.com/iguanacucumber/magazine.nvim",
 }
