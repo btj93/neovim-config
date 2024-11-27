@@ -27,4 +27,14 @@ return {
       },
     },
   },
+  keys = {
+    {
+      "<leader>gb",
+      function()
+        Snacks.gitbrowse()
+      end,
+      desc = "Git Browse",
+      mode = { "n", "v" },
+    },
+  },
 }
