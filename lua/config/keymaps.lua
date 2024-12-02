@@ -92,7 +92,13 @@ local function concat_json_fields(json_fields)
   table.insert(json_lines, "{")
 
   for _, field in ipairs(json_fields) do
-    table.insert(json_lines, string.format('  "%s": %s,', field[1], field[2]))
+    local key = field[1]
+    local val = field[2]
+    -- Indent nested json
+    if val:sub(1, 1) == "{" then
+      val = val:gsub("\n", "\n  ")
+    end
+    table.insert(json_lines, string.format('  "%s": %s,', key, val))
   end
 
   if #json_lines > 1 then
