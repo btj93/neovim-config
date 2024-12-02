@@ -122,7 +122,6 @@ end
 local function find_buffer_by_name(name)
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     local buf_name = vim.api.nvim_buf_get_name(buf)
-    vim.notify(buf_name .. " " .. name, vim.log.levels.INFO)
     if buf_name == name then
       return buf
     end
@@ -255,8 +254,6 @@ local function struct_to_json_string(node)
     type_declaration = node
   end
 
-  vim.notify(type_declaration, vim.log.levels.INFO)
-
   if type_declaration == nil then
     vim.notify("No type declaration", vim.log.levels.INFO)
     return '""'
@@ -293,8 +290,8 @@ local function struct_to_json_string(node)
         local f = uri:gsub(escaped_working_dir, ".")
         local buffer = find_buffer_by_name(uri)
 
-        vim.notify("buffer" .. buffer, vim.log.levels.INFO)
-        vim.notify("file" .. f, vim.log.levels.INFO)
+        -- vim.notify("buffer" .. buffer, vim.log.levels.INFO)
+        -- vim.notify("file" .. f, vim.log.levels.INFO)
         local created_buffer = false
         if buffer == -1 then
           buffer = vim.api.nvim_create_buf(true, false)
@@ -303,7 +300,7 @@ local function struct_to_json_string(node)
           created_buffer = true
         end
 
-        vim.notify("buffer" .. buffer_to_string(buffer), vim.log.levels.INFO)
+        -- vim.notify("buffer" .. buffer_to_string(buffer), vim.log.levels.INFO)
 
         vim.treesitter.get_parser(buffer, "go"):parse(true)
 
@@ -313,9 +310,9 @@ local function struct_to_json_string(node)
           pos = { range.start.line, range.start.character },
         })
 
-        vim.notify("node" .. c:byte_length(), vim.log.levels.INFO)
+        -- vim.notify("node" .. c:byte_length(), vim.log.levels.INFO)
 
-        -- TODO: recursively get value
+        -- Recursively get value
         value = struct_to_json_string(c)
         vim.notify("recursively" .. value, vim.log.levels.INFO)
         if created_buffer then
