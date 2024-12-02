@@ -22,8 +22,6 @@ return {
       open_telescope_mapping = {
         { mode = "i", key = "<CR>", action = OpenActions.execute_script_vertical },
         { mode = "n", key = "<CR>", action = OpenActions.execute_script_vertical },
-        { mode = "i", key = "<S-CR>", action = OpenActions.execute_script_vertical },
-        { mode = "n", key = "<CR>", action = OpenActions.execute_script_vertical },
         { mode = "i", key = "<C-h>", action = OpenActions.execute_script },
         { mode = "n", key = "<C-h>", action = OpenActions.execute_script },
         { mode = "i", key = "<C-i>", action = OpenActions.execute_script_with_input },

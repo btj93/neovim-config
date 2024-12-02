@@ -31,7 +31,9 @@ return {
     {
       "<leader>gb",
       function()
-        Snacks.gitbrowse()
+        Snacks.gitbrowse({
+          what = "commit",
+        })
       end,
       desc = "Git Browse",
       mode = { "n", "v" },

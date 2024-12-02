@@ -122,6 +122,7 @@ end
 local function find_buffer_by_name(name)
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     local buf_name = vim.api.nvim_buf_get_name(buf)
+    vim.notify(buf_name .. " " .. name, vim.log.levels.INFO)
     if buf_name == name then
       return buf
     end
@@ -139,6 +140,7 @@ local bool_types = { "bool" }
 local function get_value_by_go_type(type)
   -- TODO: Handle map
   -- e.g. map[CardColor][]string
+  -- TODO: Handle pointer
   if type:find("[]", 1, true) then
     return "{}"
   end
@@ -193,11 +195,11 @@ local function get_definition_by_position(bufnr, position)
 
   if src.uri then
     -- Single src result
-    print("src found at:", src.uri, dump(src.range))
+    -- print("src found at:", src.uri, dump(src.range))
     return src.uri, src.range
   elseif src.targetUri then
     -- Handle `LocationLink` result
-    print("src found at:", src.targetUri, dump(src.targetRange))
+    -- print("src found at:", src.targetUri, dump(src.targetRange))
     return src.targetUri, src.targetRange
   else
     vim.notify("Unexpected result format" .. dump(src), vim.log.levels.WARN)
@@ -205,22 +207,65 @@ local function get_definition_by_position(bufnr, position)
   end
 end
 
-local function struct2json(node)
-  if not node then
-    local current_line = vim.fn.getline(".")
+local function find_node_in_file(filename, line, column)
+  local parser = vim.treesitter.get_parser(filename, "go")
+  if not parser then
+    print("No parser found for file: " .. filename)
+    return nil
+  end
 
+  local tree = parser:parse()[1] -- Get the first tree
+  local root = tree:root()
+
+  local node_at_pos = root:named_descendant_for_range(line - 1, column, line + 1, column + 10)
+  if node_at_pos then
+    print("Node type: " .. node_at_pos:type())
+    print("Node text: " .. vim.treesitter.get_node_text(node_at_pos, 0))
+    return node_at_pos
+  else
+    print("No node found at position")
+    return nil
+  end
+end
+
+local buffer_to_string = function(buf)
+  local content = vim.api.nvim_buf_get_lines(buf, 0, vim.api.nvim_buf_line_count(buf), false)
+  return table.concat(content, "\n")
+end
+
+---@param node TSNode|nil
+---@return string
+local function struct_to_json_string(node)
+  if node == nil then
+    local current_line = vim.fn.getline(".")
     if not current_line:find("struct", 1, true) then
-      return print("Not a struct")
+      return '""'
     end
 
     node = vim.treesitter.get_node()
   end
 
+  if node == nil then
+    vim.notify("No node", vim.log.levels.INFO)
+    return '""'
+  end
+
   local type_declaration = find_node_ancestor({ "type_declaration" }, node)
+  if node:type() == "type_declaration" then
+    type_declaration = node
+  end
+
+  vim.notify(type_declaration, vim.log.levels.INFO)
+
+  if type_declaration == nil then
+    vim.notify("No type declaration", vim.log.levels.INFO)
+    return '""'
+  end
 
   local field_declaration_list = find_node_child({ "field_declaration_list" }, type_declaration)
   if field_declaration_list == nil then
-    return print("No field declaration list")
+    vim.notify("No field declaration list", vim.log.levels.INFO)
+    return '""'
   end
 
   local json_fields = {}
@@ -235,8 +280,8 @@ local function struct2json(node)
     if json_tag then
       local row, column, _ = type:start()
       local uri, range = get_definition_by_position(0, { row, column }) -- 0-indexed
-      -- print(uri, dump(range))
       if uri and range then
+        uri = uri:gsub("file://", "")
         local working_dir = vim.fn.getcwd()
         local type_text = vim.treesitter.get_node_text(type, 0)
         if not uri:find(working_dir, 1, true) then
@@ -244,8 +289,12 @@ local function struct2json(node)
           value = get_value_by_go_type(type_text)
           goto continue
         end
-        local f = uri:gsub("%" .. working_dir .. "/", "")
-        local buffer = find_buffer_by_name(f)
+        local escaped_working_dir = working_dir:gsub("([^%w])", "%%%1")
+        local f = uri:gsub(escaped_working_dir, ".")
+        local buffer = find_buffer_by_name(uri)
+
+        vim.notify("buffer" .. buffer, vim.log.levels.INFO)
+        vim.notify("file" .. f, vim.log.levels.INFO)
         local created_buffer = false
         if buffer == -1 then
           buffer = vim.api.nvim_create_buf(true, false)
@@ -253,15 +302,24 @@ local function struct2json(node)
           vim.api.nvim_buf_call(buffer, vim.cmd.edit)
           created_buffer = true
         end
+
+        vim.notify("buffer" .. buffer_to_string(buffer), vim.log.levels.INFO)
+
+        vim.treesitter.get_parser(buffer, "go"):parse(true)
+
         local c = vim.treesitter.get_node({
           bufnr = buffer,
           lang = "go",
-          pos = { range.start.line + 1, range.start.character + 1 },
+          pos = { range.start.line, range.start.character },
         })
-        vim.notify(dump(c), vim.log.levels.INFO)
+
+        vim.notify("node" .. c:byte_length(), vim.log.levels.INFO)
+
         -- TODO: recursively get value
+        value = struct_to_json_string(c)
+        vim.notify("recursively" .. value, vim.log.levels.INFO)
         if created_buffer then
-          vim.api.nvim_buf_delete(buffer, { force = false, unload = false })
+          vim.api.nvim_buf_delete(buffer, { force = true, unload = false })
         end
       end
       ::continue::
@@ -270,12 +328,24 @@ local function struct2json(node)
   end
 
   if #json_fields == 0 then
-    return vim.notify("No fields with json tag found", vim.log.levels.INFO)
+    -- vim.notify("No fields with json tag found", vim.log.levels.INFO)
+    return '""'
   end
 
   -- print(dump(json_fields))
-  vim.fn.setreg("+", concat_json_fields(json_fields))
+  return concat_json_fields(json_fields)
+end
+
+local function struct_to_json()
+  local json = struct_to_json_string()
+
+  if json == '""' then
+    vim.notify("No JSON tag found", vim.log.levels.INFO)
+    return
+  end
+
+  vim.fn.setreg("+", json)
   vim.notify("JSON copied to clipboard!", vim.log.levels.INFO)
 end
 
-vim.keymap.set("n", "<leader>gk", struct2json, { desc = "JSON boilerplate" })
+vim.keymap.set("n", "<leader>gk", struct_to_json, { desc = "JSON boilerplate" })
