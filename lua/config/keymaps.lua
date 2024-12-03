@@ -68,7 +68,7 @@ local function find_node_child(types, node)
 end
 
 ---@param node TSNode|nil
-local function extract_json_tag(node)
+local function extract_json_tag(node, buf)
   if not node then
     return nil
   end
@@ -82,7 +82,7 @@ local function extract_json_tag(node)
     return nil
   end
 
-  local tags_text = vim.treesitter.get_node_text(tags, 0)
+  local tags_text = vim.treesitter.get_node_text(tags, buf)
   return tags_text:match('json:"(.-)"')
 end
 
@@ -172,9 +172,11 @@ local function get_definition_by_position(bufnr, position)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
   -- Prepare the parameters for the LSP request
-  local params = vim.lsp.util.make_position_params(bufnr)
+  local params = vim.lsp.util.make_position_params(0)
   params.position.line = position[1] -- Line (0-indexed)
   params.position.character = position[2] -- Column (0-indexed)
+  -- change the uri manually as make_position_params can only handle buffers with a window
+  params.textDocument.uri = vim.uri_from_bufnr(bufnr)
 
   -- Send the request to the LSP server
   local result, err = vim.lsp.buf_request_sync(bufnr, "textDocument/definition", params, 5000)
@@ -196,40 +198,14 @@ local function get_definition_by_position(bufnr, position)
   end
 
   local src = definition.result[1] or definition.result
-  print(dump(src))
 
   if src.uri then
-    -- Single src result
-    -- print("src found at:", src.uri, dump(src.range))
     return src.uri, src.range
   elseif src.targetUri then
-    -- Handle `LocationLink` result
-    -- print("src found at:", src.targetUri, dump(src.targetRange))
     return src.targetUri, src.targetRange
   else
     vim.notify("Unexpected result format" .. dump(src), vim.log.levels.WARN)
     return nil, nil
-  end
-end
-
-local function find_node_in_file(filename, line, column)
-  local parser = vim.treesitter.get_parser(filename, "go")
-  if not parser then
-    print("No parser found for file: " .. filename)
-    return nil
-  end
-
-  local tree = parser:parse()[1] -- Get the first tree
-  local root = tree:root()
-
-  local node_at_pos = root:named_descendant_for_range(line - 1, column, line + 1, column + 10)
-  if node_at_pos then
-    print("Node type: " .. node_at_pos:type())
-    print("Node text: " .. vim.treesitter.get_node_text(node_at_pos, 0))
-    return node_at_pos
-  else
-    print("No node found at position")
-    return nil
   end
 end
 
@@ -239,8 +215,9 @@ local buffer_to_string = function(buf)
 end
 
 ---@param node TSNode|nil
+---@param buf number
 ---@return string
-local function struct_to_json_string(node)
+local function struct_to_json_string(node, buf)
   if node == nil then
     local current_line = vim.fn.getline(".")
     if not current_line:find("struct", 1, true) then
@@ -277,16 +254,18 @@ local function struct_to_json_string(node)
     -- TODO: Handle nested fields
     -- TODO: Handle struct types
     local type = field:field("type")[1]
-    local json_tag = extract_json_tag(field)
+    local json_tag = extract_json_tag(field, buf)
+
     -- default value
     local value = get_value_by_go_type("string")
     if json_tag then
       local row, column, _ = type:start()
-      local uri, range = get_definition_by_position(0, { row, column }) -- 0-indexed
+      -- vim.notify("row" .. row .. "column" .. column, vim.log.levels.INFO)
+      local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
       if uri and range then
         uri = uri:gsub("file://", "")
         local working_dir = vim.fn.getcwd()
-        local type_text = vim.treesitter.get_node_text(type, 0)
+        local type_text = vim.treesitter.get_node_text(type, buf)
         if not uri:find(working_dir, 1, true) then
           -- it is go type, don't create buffer
           value = get_value_by_go_type(type_text)
@@ -306,8 +285,6 @@ local function struct_to_json_string(node)
           created_buffer = true
         end
 
-        -- vim.notify("buffer" .. buffer_to_string(buffer), vim.log.levels.INFO)
-
         vim.treesitter.get_parser(buffer, "go"):parse(true)
 
         local c = vim.treesitter.get_node({
@@ -316,11 +293,8 @@ local function struct_to_json_string(node)
           pos = { range.start.line, range.start.character },
         })
 
-        -- vim.notify("node" .. c:byte_length(), vim.log.levels.INFO)
-
         -- Recursively get value
-        value = struct_to_json_string(c)
-        vim.notify("recursively" .. value, vim.log.levels.INFO)
+        value = struct_to_json_string(c, buffer)
         if created_buffer then
           vim.api.nvim_buf_delete(buffer, { force = true, unload = false })
         end
@@ -331,7 +305,6 @@ local function struct_to_json_string(node)
   end
 
   if #json_fields == 0 then
-    -- vim.notify("No fields with json tag found", vim.log.levels.INFO)
     return '""'
   end
 
@@ -340,7 +313,7 @@ local function struct_to_json_string(node)
 end
 
 local function struct_to_json()
-  local json = struct_to_json_string()
+  local json = struct_to_json_string(nil, 0)
 
   if json == '""' then
     vim.notify("No JSON tag found", vim.log.levels.INFO)
