@@ -30,6 +30,13 @@ vim.keymap.set({ "i" }, "jk", "<Esc>", { noremap = true, desc = "jk to escape" }
 -- remap dd to diff side by side
 vim.keymap.set({ "n" }, "<leader>dd", "<cmd>windo diffthis<cr>", { noremap = true, desc = "Diff side by side" })
 
+-- Duplicate a line and comment out the first line
+vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate a line and comment" })
+
+-- From the Vim wiki: https://bit.ly/4eLAARp
+-- Search and replace word under the cursor
+vim.keymap.set("n", "<Leader>r", [[:%s/\<<C-r><C-w>\>//g<Left><Left>]])
+
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
 ---@return TSNode|nil
@@ -145,10 +152,18 @@ local bool_types = { "bool" }
 local function get_value_by_go_type(type)
   -- TODO: Handle map
   -- e.g. map[CardColor][]string
-  -- TODO: Handle pointer
+
+  -- FIXME: Don't think this is correct for slices nor map
   if type:find("[]", 1, true) then
     return "{}"
   end
+
+  -- TODO: add option to treat pointer as non-pointer type
+  -- FIXME: also this will fail for a map pointer
+  if type:find("*", 1, true) then
+    return "null"
+  end
+
   if vim.tbl_contains(int_types, type) then
     return "0"
   end
@@ -252,7 +267,6 @@ local function struct_to_json_string(node, buf)
 
   for _, field in ipairs(field_declaration_list:named_children()) do
     -- TODO: Handle nested fields
-    -- TODO: Handle struct types
     local type = field:field("type")[1]
     local json_tag = extract_json_tag(field, buf)
 
@@ -262,6 +276,7 @@ local function struct_to_json_string(node, buf)
       local row, column, _ = type:start()
       -- vim.notify("row" .. row .. "column" .. column, vim.log.levels.INFO)
       local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
+
       if uri and range then
         uri = uri:gsub("file://", "")
         local working_dir = vim.fn.getcwd()
@@ -275,8 +290,6 @@ local function struct_to_json_string(node, buf)
         local f = uri:gsub(escaped_working_dir, ".")
         local buffer = find_buffer_by_name(uri)
 
-        -- vim.notify("buffer" .. buffer, vim.log.levels.INFO)
-        -- vim.notify("file" .. f, vim.log.levels.INFO)
         local created_buffer = false
         if buffer == -1 then
           buffer = vim.api.nvim_create_buf(true, false)
@@ -313,6 +326,11 @@ local function struct_to_json_string(node, buf)
 end
 
 local function struct_to_json()
+  if not vim.bo.filetype == "go" then
+    vim.notify("Not a go file", vim.log.levels.INFO)
+    return
+  end
+
   local json = struct_to_json_string(nil, 0)
 
   if json == '""' then

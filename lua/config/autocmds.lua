@@ -7,3 +7,13 @@ vim.api.nvim_create_autocmd({ "FileType" }, {
     vim.b.autoformat = false
   end,
 })
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+  callback = function()
+    require("todo-comments.search").search(function(results)
+      if #results > 0 then
+        vim.notify("You still have TODOs in your project!", vim.log.levels.WARN)
+      end
+    end)
+  end,
+})
