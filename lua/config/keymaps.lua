@@ -275,6 +275,7 @@ local function struct_to_json_string(node, buf)
     if json_tag then
       local row, column, _ = type:start()
       -- vim.notify("row" .. row .. "column" .. column, vim.log.levels.INFO)
+      -- FIXME:  *time.Time will only jump if the cursor is on `Time`
       local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
 
       if uri and range then
