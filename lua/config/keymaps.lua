@@ -36,6 +36,8 @@ vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Du
 -- From the Vim wiki: https://bit.ly/4eLAARp
 -- Search and replace word under the cursor
 vim.keymap.set("n", "<Leader>r", [[:%s/\<<C-r><C-w>\>//g<Left><Left>]])
+-- In visual mode, replace selected word
+vim.keymap.set("v", "<Leader>r", [["zy:%s/<C-r>z//g<Left><Left>]])
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
