@@ -15,17 +15,17 @@ vim.api.nvim_command([[colorscheme bamboo]])
 -- vim.api.nvim_command([[colorscheme cyberdream]])
 
 -- bufferline config --
-require("bufferline").setup({
-  options = {
-    hover = {
-      enabled = true,
-      delay = 150,
-      reveal = { "close" },
-    },
-    separator_style = "slant",
-  },
-})
-
+-- require("bufferline").setup({
+--   options = {
+--     hover = {
+--       enabled = true,
+--       delay = 150,
+--       reveal = { "close" },
+--     },
+--     separator_style = "slant",
+--   },
+-- })
+--
 require("codesnap").setup({
   has_breadcrumbs = true,
 })
@@ -41,6 +41,7 @@ require("flash").setup({
 require("quicker").setup()
 require("encourage").setup()
 
+Snacks.dim.enable()
 -- require("copilot").setup({
 --   suggestion = { enabled = true, auto_trigger = true },
 --   filetypes = { ["*"] = true },

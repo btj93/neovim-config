@@ -4,8 +4,8 @@
 vim.keymap.set({ "n" }, "cfp", ':let @+ = expand("%")<CR>', { noremap = true, desc = "Copy file relative path" })
 vim.keymap.set({ "n" }, "cfP", ':let @+ = expand("%:p")<CR>', { noremap = true, desc = "Copy file absolute path" })
 vim.keymap.set({ "n" }, "cfn", ':let @+ = expand("%:t")<CR>', { noremap = true, desc = "Copy filename" })
-vim.keymap.set({ "n", "v" }, "K", "5k", { noremap = true, desc = "Up faster" })
-vim.keymap.set({ "n", "v" }, "J", "5j", { noremap = true, desc = "Down faster" })
+-- vim.keymap.set({ "n", "v" }, "K", "5k", { noremap = true, desc = "Up faster" })
+-- vim.keymap.set({ "n", "v" }, "J", "5j", { noremap = true, desc = "Down faster" })
 vim.keymap.set({ "n" }, "<leader><leader>", "<cmd>Telescope find_files<cr>", { noremap = true, desc = "Find files" })
 vim.keymap.set({ "n" }, "<leader>ff", "<cmd>Telescope find_files<cr>", { noremap = true, desc = "Find files" })
 vim.keymap.set({ "n" }, "<Tab>", ">>_", { noremap = true, desc = "Add indent" })
@@ -37,7 +37,13 @@ vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Du
 -- Search and replace word under the cursor
 vim.keymap.set("n", "<Leader>r", [[:%s/\<<C-r><C-w>\>//g<Left><Left>]])
 -- In visual mode, replace selected word
-vim.keymap.set("v", "<Leader>r", [["zy:%s/<C-r>z//g<Left><Left>]])
+vim.keymap.set("v", "<Leader>r", [["zy:%s/\<<C-r>z\>//g<Left><Left>]])
+
+local tw = require("treewalker")
+vim.keymap.set({ "n", "v" }, "J", tw.move_down, { noremap = true })
+vim.keymap.set({ "n", "v" }, "K", tw.move_up, { noremap = true })
+vim.keymap.set({ "n", "v" }, "H", tw.move_out, { noremap = true })
+vim.keymap.set("n", "L", tw.move_in, { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
