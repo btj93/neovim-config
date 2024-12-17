@@ -1,6 +1,6 @@
 return {
   "aaronik/treewalker.nvim",
   opts = {
-    highlight = false, -- default is false
+    highlight = true, -- default is false
   },
 }

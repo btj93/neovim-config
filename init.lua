@@ -41,7 +41,6 @@ require("flash").setup({
 require("quicker").setup()
 require("encourage").setup()
 
-Snacks.dim.enable()
 -- require("copilot").setup({
 --   suggestion = { enabled = true, auto_trigger = true },
 --   filetypes = { ["*"] = true },
