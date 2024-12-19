@@ -7,7 +7,7 @@ return {
   -- (I personally use lspsaga so check out lspsaga integration or lsp integration for a smoother experience without separate keybindings)
   keys = {
     -- { "<leader>ge", "<cmd>EcologGoto<cr>", desc = "Go to env file" },
-    { "<leader>ep", "<cmd>EcologPeek<cr>", desc = "Ecolog peek variable" },
+    -- { "<leader>ep", "<cmd>EcologPeek<cr>", desc = "Ecolog peek variable" },
     -- { "<leader>es", "<cmd>EcologSelect<cr>", desc = "Switch env file" },
   },
   -- Lazy loading is done internally

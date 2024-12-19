@@ -1,3 +1,0 @@
-return {
-  "crusoexia/vim-monokai",
-}

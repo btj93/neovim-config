@@ -1,18 +1,6 @@
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 vim.opt.termguicolors = true
--- require("catppuccin").setup({
---   flavour = "frappe", -- latte, frappe, macchiato, mocha
--- })
--- vim.api.nvim_command([[colorscheme catppuccin-frappe]])
--- vim.api.nvim_command([[colorscheme nordfox]])
--- vim.api.nvim_command([[colorscheme kanagawa]])
--- vim.api.nvim_command([[colorscheme monokai]])
--- vim.api.nvim_command([[colorscheme forestbones]])
--- vim.api.nvim_command([[colorscheme zenburned]])
--- vim.api.nvim_command([[colorscheme panda]])
-vim.api.nvim_command([[colorscheme bamboo]])
--- vim.api.nvim_command([[colorscheme cyberdream]])
 
 -- bufferline config --
 -- require("bufferline").setup({

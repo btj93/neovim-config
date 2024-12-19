@@ -35,16 +35,5 @@ return {
       },
     },
   },
-  keys = {
-    {
-      "<leader>gb",
-      function()
-        Snacks.gitbrowse({
-          what = "commit",
-        })
-      end,
-      desc = "Git Browse",
-      mode = { "n", "v" },
-    },
-  },
+  keys = {},
 }

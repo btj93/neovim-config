@@ -6,6 +6,7 @@ return {
       open_win_override = {
         border = "rounded", -- use "rounded" for rounded border
       },
+      position = "cursor",
       text_align = "file-first",
     },
     navigate = {

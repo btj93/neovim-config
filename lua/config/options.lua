@@ -4,3 +4,4 @@
 
 vim.opt.spelllang = "en_us,cjk"
 vim.opt.spell = true
+vim.opt.scrolloff = 10

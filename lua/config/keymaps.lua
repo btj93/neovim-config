@@ -40,10 +40,12 @@ vim.keymap.set(
 -- In visual mode, replace selected word
 vim.keymap.set("v", "<Leader>r", [["zy:%s/\<<C-r>z//g<Left><Left>]], { desc = "Search and replace selected word" })
 
-vim.keymap.set({ "n", "v" }, "J", "<cmd>Treewalker Down<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "K", "<cmd>Treewalker Up<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "H", "<cmd>Treewalker Left<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "L", "<cmd>Treewalker Right<CR>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<S-j>", "<cmd>Treewalker Down<CR>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<S-k>", "<cmd>Treewalker Up<CR>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<S-h>", "<cmd>Treewalker Left<CR>", { noremap = true })
+vim.keymap.set({ "n", "v" }, "<S-l>", "<cmd>Treewalker Right<CR>", { noremap = true })
+
+vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
