@@ -39,13 +39,13 @@ return {
     vim.api.nvim_set_keymap(
       "n",
       "<leader>p",
-      ":Telescope project_cli_commands open<cr>",
+      "<cmd>Telescope project_cli_commands open<cr>",
       { noremap = true, silent = true }
     )
     vim.api.nvim_set_keymap(
       "n",
       "<leader>;",
-      ":Telescope project_cli_commands running<cr>",
+      "<cmd>Telescope project_cli_commands running<cr>",
       { noremap = true, silent = true }
     )
   end,

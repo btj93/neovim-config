@@ -12,6 +12,7 @@ return {
     navigate = {
       cancel_snipe = { "q", "<esc>" },
     },
+    sort = "last",
   },
   keys = {
     {
