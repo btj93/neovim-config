@@ -2,6 +2,14 @@ return {
   "echasnovski/mini.diff",
   lazy = false,
   opts = {
+    view = {
+      style = "sign",
+      signs = {
+        add = "▎",
+        change = "▎",
+        delete = "",
+      },
+    },
     mappings = {
       -- Apply hunks inside a visual/operator region
       apply = "'",
@@ -24,7 +32,7 @@ return {
     {
       "<leader>go",
       function()
-        require("mini.diff").toggle_overlay()
+        require("mini.diff").toggle_overlay(0)
       end,
       desc = "Open diff",
       mode = "n",

@@ -3,6 +3,8 @@ return {
   opts = {
     libgit2_path = "/opt/homebrew/lib/libgit2.dylib",
     show_patch = true,
+    width = 70,
+    external_diffview = true, -- tell fugit2 to use diffview.nvim instead of builtin implementation.
   },
   dependencies = {
     "MunifTanjim/nui.nvim",
@@ -12,10 +14,9 @@ return {
       "chrisgrieser/nvim-tinygit", -- optional: for Github PR view
       dependencies = { "stevearc/dressing.nvim" },
     },
-    "sindrets/diffview.nvim", -- optional: for Diffview
   },
-  cmd = { "Fugit2", "Fugit2Graph" },
+  cmd = { "Fugit2", "Fugit2Blame", "Fugit2Diff", "Fugit2Graph" },
   keys = {
-    { "<leader>F", mode = "n", "<cmd>Fugit2<cr>", desc = "Fugit2" },
+    { "<leader>F", mode = "n", "<cmd>Fugit2<cr>" },
   },
 }

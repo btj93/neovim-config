@@ -15,7 +15,7 @@ return {
   },
   keys = {
     {
-      "<leader>bs",
+      "<leader>a",
       function()
         require("snipe").open_buffer_menu()
       end,
