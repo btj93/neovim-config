@@ -47,6 +47,14 @@ vim.keymap.set({ "n", "v" }, "<S-l>", "<cmd>Treewalker Right<CR>", { noremap = t
 
 vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
+-- my dumb ass pressing the wrong key to leave
+vim.keymap.set({ "n" }, "q:", "<cmd>q<CR>", { noremap = true })
+vim.api.nvim_create_user_command("WQ", "wq", {})
+vim.api.nvim_create_user_command("Wq", "wq", {})
+vim.api.nvim_create_user_command("W", "w", {})
+vim.api.nvim_create_user_command("Qa", "qa", {})
+vim.api.nvim_create_user_command("Q", "q", {})
+
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
 ---@return TSNode|nil

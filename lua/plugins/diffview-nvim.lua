@@ -20,6 +20,7 @@ return {
         end
       end,
       mode = "n",
+      desc = "Diffview",
     },
   },
 }
