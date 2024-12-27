@@ -22,6 +22,7 @@ vim.keymap.set({ "n" }, "gg", "ggzz", { noremap = true, desc = "Go to top" })
 vim.keymap.set({ "n" }, "G", "Gzz", { noremap = true, desc = "Go to bottom" })
 -- remap jk
 vim.keymap.set({ "i" }, "jk", "<Esc>", { noremap = true, desc = "jk to escape" })
+vim.keymap.set({ "i" }, "JK", "<Esc>", { noremap = true, desc = "JK to escape" })
 
 -- remap dd to diff side by side
 vim.keymap.set({ "n" }, "<leader>dd", "<cmd>windo diffthis<cr>", { noremap = true, desc = "Diff side by side" })
