@@ -2,8 +2,21 @@ return {
   "saghen/blink.cmp",
   lazy = false, -- lazy loading handled internally
   dependencies = "rafamadriz/friendly-snippets",
-  ---@module 'blink.cmp'
-  ---@type blink.cmp.Config
+  config = function(_, opts)
+    opts.completion.menu.draw = {
+      -- We don't need label_description now because label and label_description are already
+      -- conbined together in label by colorful-menu.nvim.
+      columns = { { "kind_icon" }, { "label", gap = 1 } },
+      components = {
+        label = {
+          text = require("colorful-menu").blink_components_text,
+          highlight = require("colorful-menu").blink_components_highlight,
+        },
+      },
+    }
+    opts.sources.compat = nil
+    require("blink.cmp").setup(opts)
+  end,
   opts = {
     sources = {
       default = { "ecolog" },

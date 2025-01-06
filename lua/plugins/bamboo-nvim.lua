@@ -4,7 +4,7 @@ return {
   priority = 1000,
   config = function()
     require("bamboo").setup({
-      style = "multiplex",
+      -- optional configuration here
     })
     require("bamboo").load()
   end,

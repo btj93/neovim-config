@@ -18,6 +18,7 @@ return {
       -- nvim_cmp = true, -- If you dont plan to use nvim_cmp set to false, enabled by default
       -- If you are planning to use blink cmp uncomment this line
       blink_cmp = true,
+      lsp = true,
     },
     -- Enables shelter mode for sensitive values
     shelter = {

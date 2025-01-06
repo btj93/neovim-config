@@ -1,8 +1,6 @@
 return {
   "bennypowers/nvim-regexplainer",
-  config = function()
-    require("regexplainer").setup()
-  end,
+  config = true,
   dependencies = {
     "nvim-treesitter/nvim-treesitter",
     "MunifTanjim/nui.nvim",

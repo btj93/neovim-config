@@ -3,4 +3,5 @@ return {
   ---@module "quicker"
   ---@type quicker.SetupOptions
   opts = {},
+  config = true,
 }
