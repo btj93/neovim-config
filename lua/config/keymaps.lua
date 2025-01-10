@@ -10,12 +10,6 @@ vim.keymap.set({ "i" }, "<S-Tab>", "<C-D>", { noremap = true, desc = "Remove ind
 vim.keymap.set({ "v" }, "<Tab>", ">gv", { noremap = true, desc = "Add indent" })
 vim.keymap.set({ "v" }, "<S-Tab>", "<gv", { noremap = true, desc = "Remove indent" })
 
--- use <C-Up>, ...
--- vim.keymap.set("n", "<S-Left>", "<cmd>vertical resize -40<cr>", { noremap = true, desc = "Decrease window width" })
--- vim.keymap.set("n", "<S-Right>", "<cmd>vertical resize +40<cr>", { noremap = true, desc = "Increase window width" })
--- vim.keymap.set("n", "<S-Up>", "<cmd>horizontal resize +10<cr>", { noremap = true, desc = "Increase window height" })
--- vim.keymap.set("n", "<S-Down>", "<cmd>horizontal resize -10<cr>", { noremap = true, desc = "Decrease window height" })
-
 -- remap gg
 vim.keymap.set({ "n" }, "gg", "ggzz", { noremap = true, desc = "Go to top" })
 -- remap G
@@ -31,15 +25,26 @@ vim.keymap.set({ "n" }, "<leader>dd", "<cmd>windo diffthis<cr>", { noremap = tru
 vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate a line and comment" })
 
 -- From the Vim wiki: https://bit.ly/4eLAARp
--- Search and replace word under the cursor
+-- Search and replace word under cursor
 vim.keymap.set(
   "n",
   "<Leader>r",
   [[:%s/\<<C-r><C-w>\>//g<Left><Left>]],
-  { desc = "Search and replace word under the cursor" }
+  { desc = "Search and replace word under cursor" }
 )
 -- In visual mode, replace selected word
-vim.keymap.set("v", "<Leader>r", [["zy:%s/\<<C-r>z//g<Left><Left>]], { desc = "Search and replace selected word" })
+local function search_and_replace_selected_word()
+  vim.fn.feedkeys("zy", "x")
+  local word = vim.fn.escape(vim.fn.getreg("z"), "/\\")
+  return ":%s/" .. word .. "//g<Left><Left>"
+end
+
+vim.keymap.set(
+  "v",
+  "<Leader>r",
+  search_and_replace_selected_word,
+  { desc = "Search and replace selected word", expr = true }
+)
 
 vim.keymap.set({ "n", "v" }, "<S-j>", "<cmd>Treewalker Down<CR>", { noremap = true })
 vim.keymap.set({ "n", "v" }, "<S-k>", "<cmd>Treewalker Up<CR>", { noremap = true })
@@ -55,6 +60,15 @@ vim.api.nvim_create_user_command("Wq", "wq", {})
 vim.api.nvim_create_user_command("W", "w", {})
 vim.api.nvim_create_user_command("Qa", "qa", {})
 vim.api.nvim_create_user_command("Q", "q", {})
+
+-- Center search results
+-- yoinked from https://vim.fandom.com/wiki/Make_search_results_appear_in_the_middle_of_the_screen
+vim.keymap.set("n", "n", "nzz", { noremap = true })
+vim.keymap.set("n", "N", "Nzz", { noremap = true })
+vim.keymap.set("n", "*", "*zz", { noremap = true })
+vim.keymap.set("n", "#", "#zz", { noremap = true })
+vim.keymap.set("n", "g*", "g*zz", { noremap = true })
+vim.keymap.set("n", "g#", "g#zz", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

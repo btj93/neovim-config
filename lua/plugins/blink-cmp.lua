@@ -18,6 +18,12 @@ return {
     require("blink.cmp").setup(opts)
   end,
   opts = {
+    enabled = function()
+      return vim.bo.buftype ~= "prompt"
+        and vim.b.completion ~= false
+        and vim.bo.filetype ~= "DressingInput"
+        and vim.bo.filetype ~= "dropbar_menu_fzf"
+    end,
     sources = {
       default = { "ecolog" },
       providers = {

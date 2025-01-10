@@ -17,6 +17,16 @@ return {
         visible = true,
       },
     },
+    window = {
+      mappings = {
+        ["m"] = {
+          "move",
+          config = {
+            show_path = "relative",
+          },
+        },
+      },
+    },
   },
   keys = {
     {
