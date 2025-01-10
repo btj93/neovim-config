@@ -33,18 +33,65 @@ vim.keymap.set(
   { desc = "Search and replace word under cursor" }
 )
 -- In visual mode, replace selected word
-local function search_and_replace_selected_word()
-  vim.fn.feedkeys("zy", "x")
-  local word = vim.fn.escape(vim.fn.getreg("z"), "/\\")
-  return ":%s/" .. word .. "//g<Left><Left>"
-end
+vim.keymap.set("v", "<leader>r", function()
+  local start_pos = vim.fn.getpos("v")
+  local end_pos = vim.fn.getpos(".")
 
-vim.keymap.set(
-  "v",
-  "<Leader>r",
-  search_and_replace_selected_word,
-  { desc = "Search and replace selected word", expr = true }
-)
+  local line = vim.fn.getline(start_pos[2])
+  local word = vim.trim(string.sub(line, start_pos[3], end_pos[3]))
+
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { word })
+
+  local width = vim.api.nvim_win_get_width(0)
+  local height = vim.api.nvim_win_get_height(0)
+
+  local win_opts = {
+    title = "Search and replace",
+    relative = "editor",
+    width = math.ceil(width * 0.4),
+    height = math.ceil(height * 0.05),
+    col = math.ceil((width - width * 0.4) / 2),
+    row = math.ceil((height - height * 0.05) / 2),
+    style = "minimal",
+    border = "rounded",
+  }
+
+  Abort = false
+
+  vim.keymap.set("n", "q", function()
+    Abort = true
+    vim.api.nvim_win_close(0, true)
+  end, { noremap = true, buffer = bufnr })
+
+  vim.keymap.set("n", "<Esc>", function()
+    Abort = true
+    vim.api.nvim_win_close(0, true)
+  end, { noremap = true, buffer = bufnr })
+
+  vim.keymap.set({ "n", "i" }, "<CR>", function()
+    vim.api.nvim_win_close(0, true)
+  end, { noremap = true, buffer = bufnr })
+
+  vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
+    buffer = bufnr,
+    callback = function()
+      if Abort then
+        return
+      end
+      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+      local new_word = vim.trim(lines[1])
+      if new_word == word then
+        return
+      end
+      vim.schedule(function()
+        vim.cmd("%s/" .. word .. "/" .. new_word .. "/gc")
+      end)
+    end,
+  })
+
+  vim.api.nvim_open_win(bufnr, true, win_opts)
+end, { noremap = true })
 
 vim.keymap.set({ "n", "v" }, "<S-j>", "<cmd>Treewalker Down<CR>", { noremap = true })
 vim.keymap.set({ "n", "v" }, "<S-k>", "<cmd>Treewalker Up<CR>", { noremap = true })
@@ -69,6 +116,12 @@ vim.keymap.set("n", "*", "*zz", { noremap = true })
 vim.keymap.set("n", "#", "#zz", { noremap = true })
 vim.keymap.set("n", "g*", "g*zz", { noremap = true })
 vim.keymap.set("n", "g#", "g#zz", { noremap = true })
+
+-- Little movement in insert mode
+vim.keymap.set("i", "<C-n>", "<C-o>k", { noremap = true })
+vim.keymap.set("i", "<C-p>", "<C-o>j", { noremap = true })
+vim.keymap.set("i", "<C-b>", "<C-o>h", { noremap = true })
+vim.keymap.set("i", "<C-f>", "<C-o>l", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

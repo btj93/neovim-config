@@ -36,17 +36,9 @@ return {
     }
 
     require("project_cli_commands").setup(config)
-    vim.api.nvim_set_keymap(
-      "n",
-      "<leader>p",
-      "<cmd>Telescope project_cli_commands open<cr>",
-      { noremap = true, silent = true }
-    )
-    vim.api.nvim_set_keymap(
-      "n",
-      "<leader>;",
-      "<cmd>Telescope project_cli_commands running<cr>",
-      { noremap = true, silent = true }
-    )
   end,
+  keys = {
+    { "<leader>p", "<cmd>Telescope project_cli_commands open<cr>", desc = "Run cli commands" },
+    { "<leader>;", "<cmd>Telescope project_cli_commands running<cr>", desc = "Find running cli commands" },
+  },
 }
