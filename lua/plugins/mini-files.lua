@@ -19,7 +19,11 @@ return {
     {
       "-",
       function()
-        require("mini.files").open(vim.api.nvim_buf_get_name(0), true)
+        MiniFiles.open(vim.api.nvim_buf_get_name(0), true)
+        -- defering to give time for git status to show
+        vim.defer_fn(function()
+          MiniFiles.reveal_cwd()
+        end, 20)
       end,
       desc = "Open mini.files (Directory of Current File)",
     },

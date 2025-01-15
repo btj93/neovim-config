@@ -18,8 +18,15 @@ vim.keymap.set({ "n" }, "G", "Gzz", { noremap = true, desc = "Go to bottom" })
 vim.keymap.set({ "i" }, "jk", "<Esc>", { noremap = true, desc = "jk to escape" })
 vim.keymap.set({ "i" }, "JK", "<Esc>", { noremap = true, desc = "JK to escape" })
 
--- remap dd to diff side by side
-vim.keymap.set({ "n" }, "<leader>dd", "<cmd>windo diffthis<cr>", { noremap = true, desc = "Diff side by side" })
+-- remap <leader>dd to diff side by side
+local function toggle_diff()
+  if vim.wo.diff then
+    vim.cmd("diffoff!")
+  else
+    vim.cmd("windo diffthis")
+  end
+end
+vim.keymap.set({ "n" }, "<leader>dd", toggle_diff, { noremap = true, desc = "Diff side by side" })
 
 -- Duplicate a line and comment out the first line
 vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate a line and comment" })
