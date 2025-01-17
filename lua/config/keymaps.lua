@@ -108,7 +108,7 @@ vim.keymap.set({ "n", "v" }, "<S-l>", "<cmd>Treewalker Right<CR>", { noremap = t
 vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
 -- my dumb ass pressing the wrong key to leave
-vim.keymap.set({ "n" }, "q:", "<cmd>q<CR>", { noremap = true })
+vim.keymap.set({ "n" }, "q:", "<nop>", { noremap = true })
 vim.api.nvim_create_user_command("WQ", "wq", {})
 vim.api.nvim_create_user_command("Wq", "wq", {})
 vim.api.nvim_create_user_command("W", "w", {})
@@ -117,12 +117,13 @@ vim.api.nvim_create_user_command("Q", "q", {})
 
 -- Center search results
 -- yoinked from https://vim.fandom.com/wiki/Make_search_results_appear_in_the_middle_of_the_screen
-vim.keymap.set("n", "n", "nzz", { noremap = true })
-vim.keymap.set("n", "N", "Nzz", { noremap = true })
-vim.keymap.set("n", "*", "*zz", { noremap = true })
-vim.keymap.set("n", "#", "#zz", { noremap = true })
-vim.keymap.set("n", "g*", "g*zz", { noremap = true })
-vim.keymap.set("n", "g#", "g#zz", { noremap = true })
+-- handled by tiny-glimmer.nvim now
+-- vim.keymap.set("n", "n", "nzz", { noremap = true })
+-- vim.keymap.set("n", "N", "Nzz", { noremap = true })
+-- vim.keymap.set("n", "*", "*zz", { noremap = true })
+-- vim.keymap.set("n", "#", "#zz", { noremap = true })
+-- vim.keymap.set("n", "g*", "g*zz", { noremap = true })
+-- vim.keymap.set("n", "g#", "g#zz", { noremap = true })
 
 -- Little movement in insert mode
 vim.keymap.set("i", "<C-n>", "<C-o>k", { noremap = true })

@@ -23,6 +23,7 @@ return {
         and vim.b.completion ~= false
         and vim.bo.filetype ~= "DressingInput"
         and vim.bo.filetype ~= "dropbar_menu_fzf"
+        and vim.bo.filetype ~= "minifiles"
     end,
     sources = {
       default = { "ecolog" },
