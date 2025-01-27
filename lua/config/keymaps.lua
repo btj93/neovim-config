@@ -18,6 +18,10 @@ vim.keymap.set({ "n" }, "G", "Gzz", { noremap = true, desc = "Go to bottom" })
 vim.keymap.set({ "i" }, "jk", "<Esc>", { noremap = true, desc = "jk to escape" })
 vim.keymap.set({ "i" }, "JK", "<Esc>", { noremap = true, desc = "JK to escape" })
 
+-- remap page up and page down
+vim.keymap.set("n", "<C-d>", "5jzz")
+vim.keymap.set("n", "<C-u>", "5kzz")
+
 -- remap <leader>dd to diff side by side
 local function toggle_diff()
   if vim.wo.diff then

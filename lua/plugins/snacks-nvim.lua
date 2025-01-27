@@ -7,6 +7,9 @@ return {
           filename_first = true, -- display filename before the file path
         },
       },
+      matcher = {
+        frecency = true, -- frecency bonus
+      },
     },
     lazygit = {
       config = {
@@ -64,14 +67,23 @@ return {
     {
       "<leader><space>",
       function()
-        Snacks.picker.files({
-          hidden = true,
-          ignored = true,
-        })
+        Snacks.picker.smart({})
       end,
       mode = "n",
-      desc = "Find Files",
+      desc = "Smart Find",
     },
+
+    -- {
+    --   "<leader><space>",
+    --   function()
+    --     Snacks.picker.files({
+    --       hidden = true,
+    --       ignored = true,
+    --     })
+    --   end,
+    --   mode = "n",
+    --   desc = "Find Files",
+    -- },
     {
       "<leader>/",
       function()
