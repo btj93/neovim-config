@@ -64,26 +64,25 @@ return {
       mode = "n",
       desc = "Lazygit (Root Dir)",
     },
-    {
-      "<leader><space>",
-      function()
-        Snacks.picker.smart({})
-      end,
-      mode = "n",
-      desc = "Smart Find",
-    },
-
     -- {
     --   "<leader><space>",
     --   function()
-    --     Snacks.picker.files({
-    --       hidden = true,
-    --       ignored = true,
-    --     })
+    --     Snacks.picker.smart({})
     --   end,
     --   mode = "n",
-    --   desc = "Find Files",
+    --   desc = "Smart Find",
     -- },
+    {
+      "<leader><space>",
+      function()
+        Snacks.picker.files({
+          hidden = true,
+          ignored = true,
+        })
+      end,
+      mode = "n",
+      desc = "Find Files",
+    },
     {
       "<leader>/",
       function()

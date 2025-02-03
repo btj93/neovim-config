@@ -1,0 +1,24 @@
+{
+  "html_table": {
+    "prefix": "HTML table",
+    "body": [
+      "<table>",
+      "  <tr>",
+      "    <th>${1:Column 1}</th>",
+      "    <th>${2:Column 2}</th>",
+      "    <th>${3:Column 3}</th>",
+      "  </tr>",
+      "  <tr>",
+      "    <td>${4:Item 1}</td>",
+      "    <td>${5:Item 1}</td>",
+      "    <td>${6:Item 1}</td>",
+      "  </tr>",
+      "  <tr>",
+      "    <td>${7:Item 2}</td>",
+      "    <td>${8:Item 2}</td>",
+      "    <td>${9:Item 2}</td>",
+      "  </tr>",
+      "</table>"
+    ]
+  }
+}
