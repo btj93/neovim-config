@@ -36,4 +36,27 @@ return {
       },
     },
   },
+  keys = {
+    {
+      "n",
+      function()
+        require("tiny-glimmer").search_next()
+      end,
+      { noremap = true, silent = true },
+    },
+    {
+      "N",
+      function()
+        require("tiny-glimmer").search_prev()
+      end,
+      { noremap = true, silent = true },
+    },
+    {
+      "*",
+      function()
+        require("tiny-glimmer").search_under_cursor()
+      end,
+      { noremap = true, silent = true },
+    },
+  },
 }
