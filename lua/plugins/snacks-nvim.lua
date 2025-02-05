@@ -2,6 +2,9 @@ return {
   "folke/snacks.nvim",
   opts = {
     picker = {
+      sources = {
+        files = { hidden = true, ignored = true },
+      },
       formatters = {
         file = {
           filename_first = true, -- display filename before the file path
@@ -67,7 +70,7 @@ return {
     -- {
     --   "<leader><space>",
     --   function()
-    --     Snacks.picker.smart({})
+    --     Snacks.picker.smart()
     --   end,
     --   mode = "n",
     --   desc = "Smart Find",
@@ -76,8 +79,8 @@ return {
       "<leader><space>",
       function()
         Snacks.picker.files({
-          hidden = true,
-          ignored = true,
+          -- hidden = true,
+          -- ignored = true,
         })
       end,
       mode = "n",
