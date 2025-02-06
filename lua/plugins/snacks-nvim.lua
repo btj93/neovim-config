@@ -14,6 +14,13 @@ return {
         frecency = true, -- frecency bonus
       },
     },
+    indent = {
+      chunk = {
+        -- when enabled, scopes will be rendered as chunks, except for the
+        -- top-level scope which will be rendered as a scope.
+        enabled = true,
+      },
+    },
     lazygit = {
       config = {
         os = {

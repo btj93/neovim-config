@@ -20,5 +20,11 @@
       "  </tr>",
       "</table>"
     ]
+  },
+  "row": {
+    "prefix": "row",
+    "body": [
+      "| ${1:Column 1} | ${2:Column 2} |"
+    ]
   }
 }
