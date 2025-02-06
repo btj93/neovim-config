@@ -126,8 +126,8 @@ vim.api.nvim_create_user_command("Q", "q", {})
 -- vim.keymap.set("n", "N", "Nzz", { noremap = true })
 -- vim.keymap.set("n", "*", "*zz", { noremap = true })
 -- vim.keymap.set("n", "#", "#zz", { noremap = true })
--- vim.keymap.set("n", "g*", "g*zz", { noremap = true })
--- vim.keymap.set("n", "g#", "g#zz", { noremap = true })
+vim.keymap.set("n", "g*", "g*zz", { noremap = true })
+vim.keymap.set("n", "g#", "g#zz", { noremap = true })
 
 -- Little movement in insert mode
 vim.keymap.set("i", "<C-n>", "<C-o>k", { noremap = true })
