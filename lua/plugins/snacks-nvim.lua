@@ -104,5 +104,13 @@ return {
       mode = "n",
       desc = "Grep",
     },
+    {
+      "<leader>o",
+      function()
+        Snacks.picker.lsp_symbols({ layout = { preset = "vscode", preview = "main" } })
+      end,
+      mode = "n",
+      desc = "LSP Symbols",
+    },
   },
 }

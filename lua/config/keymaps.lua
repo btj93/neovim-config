@@ -130,8 +130,8 @@ vim.keymap.set("n", "g*", "g*zz", { noremap = true })
 vim.keymap.set("n", "g#", "g#zz", { noremap = true })
 
 -- Little movement in insert mode
-vim.keymap.set("i", "<C-n>", "<C-o>k", { noremap = true })
-vim.keymap.set("i", "<C-p>", "<C-o>j", { noremap = true })
+vim.keymap.set("i", "<C-n>", "<C-o>j", { noremap = true })
+vim.keymap.set("i", "<C-p>", "<C-o>k", { noremap = true })
 vim.keymap.set("i", "<C-b>", "<C-o>h", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<C-o>l", { noremap = true })
 
