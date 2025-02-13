@@ -55,6 +55,8 @@ return {
         "select_prev",
         "fallback",
       },
+      ["<Left>"] = { "fallback" },
+      ["<Right>"] = { "fallback" },
       ["<CR>"] = { "accept", "fallback" },
       ["<Esc>"] = { "hide", "fallback" },
       ["<PageUp>"] = { "scroll_documentation_up", "fallback" },
