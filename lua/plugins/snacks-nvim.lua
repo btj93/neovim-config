@@ -104,13 +104,22 @@ return {
       mode = "n",
       desc = "Grep",
     },
+    -- replaced by namu.nvim
+    -- {
+    --   "<leader>o",
+    --   function()
+    --     Snacks.picker.lsp_symbols({ layout = { preset = "vscode", preview = "main" } })
+    --   end,
+    --   mode = "n",
+    --   desc = "LSP Symbols",
+    -- },
+    -- don't use snacks.picker to show notification history
     {
-      "<leader>o",
+      "<leader>n",
       function()
-        Snacks.picker.lsp_symbols({ layout = { preset = "vscode", preview = "main" } })
+        Snacks.notifier.show_history()
       end,
-      mode = "n",
-      desc = "LSP Symbols",
+      desc = "Notification History",
     },
   },
 }

@@ -6,3 +6,5 @@ vim.opt.spelllang = "en_us,cjk"
 vim.opt.spell = true
 vim.opt.scrolloff = 10
 vim.opt.diffopt = "filler,internal,closeoff,context:5,linematch:60"
+vim.opt.fileencodings = "utf-8,sjis"
+vim.opt.encoding = "utf-8"

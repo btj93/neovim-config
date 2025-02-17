@@ -1,6 +1,7 @@
 return {
   "rachartier/tiny-glimmer.nvim",
   event = "VeryLazy",
+  keys = { { "p" }, { "P" }, { "n" }, { "N" }, { "*" }, { "u" }, { "<C-r>" } },
   opts = {
     enabled = true,
     default_animation = "fade",
@@ -9,6 +10,9 @@ return {
       -- If set to false, you will need to call the API functions to trigger the animations
       auto_map = true,
 
+      yank = {
+        enabled = true,
+      },
       search = {
         enabled = true,
         default_animation = "pulse",
@@ -19,13 +23,15 @@ return {
         enabled = true,
         default_animation = "custom",
       },
+      undo = { enabled = true },
+      redo = { enabled = true },
     },
     animations = {
       fade = {
         max_duration = 300,
         min_duration = 300,
+        from_color = "Visual",
         to_color = "#2d4f67",
-        from_color = "#2d4f67",
       },
       pulse = {
         max_duration = 600,
@@ -78,30 +84,12 @@ return {
       },
     },
   },
-  keys = {
-    {
-      "n",
-      function()
-        require("tiny-glimmer").search_next()
-        vim.api.nvim_feedkeys("zzzv", "n", false)
+  init = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "LazyVimAutocmdsDefaults",
+      callback = function()
+        vim.api.nvim_del_augroup_by_name("lazyvim_highlight_yank")
       end,
-      { noremap = true, silent = true },
-    },
-    {
-      "N",
-      function()
-        require("tiny-glimmer").search_prev()
-        vim.api.nvim_feedkeys("zzzv", "n", false)
-      end,
-      { noremap = true, silent = true },
-    },
-    {
-      "*",
-      function()
-        require("tiny-glimmer").search_under_cursor()
-        vim.api.nvim_feedkeys("zzzv", "n", false)
-      end,
-      { noremap = true, silent = true },
-    },
-  },
+    })
+  end,
 }
