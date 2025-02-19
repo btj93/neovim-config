@@ -55,8 +55,8 @@ return {
         "select_prev",
         "fallback",
       },
-      ["<Left>"] = { "fallback" },
-      ["<Right>"] = { "fallback" },
+      ["<c-b>"] = { "fallback" }, -- for movements in insert mode
+      ["<c-f>"] = { "fallback" }, -- for movements in insert mode
       ["<CR>"] = { "accept", "fallback" },
       ["<Esc>"] = { "hide", "fallback" },
       ["<PageUp>"] = { "scroll_documentation_up", "fallback" },

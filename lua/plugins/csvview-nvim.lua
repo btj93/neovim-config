@@ -1,5 +1,6 @@
 return {
   "hat0uma/csvview.nvim",
+  ft = { "csv", "tsv" },
   ---@module "csvview"
   ---@type CsvView.Options
   opts = {
@@ -20,6 +21,13 @@ return {
   },
   cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
   keys = {
-    { "<leader>cca", "<cmd>CsvViewToggle<cr>", mode = "n", desc = "Align CSV" },
+    {
+      "<leader>cca",
+      function()
+        require("csvview").toggle()
+      end,
+      mode = "n",
+      desc = "Align CSV",
+    },
   },
 }

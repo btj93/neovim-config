@@ -14,7 +14,9 @@ autocmd({ "FileType" }, {
 autocmd({ "FileType" }, {
   pattern = { "csv", "tsv" },
   callback = function()
-    vim.cmd("CsvViewEnable")
+    vim.defer_fn(function()
+      require("csvview").enable()
+    end, 5)
   end,
 })
 

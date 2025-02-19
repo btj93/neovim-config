@@ -38,7 +38,9 @@ return {
   keys = {
     {
       "<leader>o",
-      "<cmd>lua require('namu.namu_symbols').show()<cr>",
+      function()
+        require("namu.namu_symbols").show()
+      end,
       { noremap = true, mode = "n", desc = "Jump to LSP symbol" },
     },
   },
