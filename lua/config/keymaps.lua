@@ -134,6 +134,7 @@ vim.keymap.set("i", "<C-n>", "<C-o>j", { noremap = true })
 vim.keymap.set("i", "<C-p>", "<C-o>k", { noremap = true })
 vim.keymap.set("i", "<C-b>", "<C-o>h", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<C-o>l", { noremap = true })
+vim.keymap.set("i", "<C-e>", "<C-o>$", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
