@@ -9,7 +9,7 @@ return {
       function()
         local operator = vim.v.operator
         if operator == "d" then
-          local scope = MiniIndentscope.get_scope()
+          local scope = require("mini.indentscope").get_scope()
           local top = scope.border.top
           local bottom = scope.border.bottom
           local row, col = unpack(vim.api.nvim_win_get_cursor(0))

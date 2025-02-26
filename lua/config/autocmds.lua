@@ -4,6 +4,52 @@
 
 local autocmd = vim.api.nvim_create_autocmd
 
+local enable_vimade_filetypes = {
+  "go",
+  "lua",
+}
+
+autocmd({ "FileType" }, {
+  pattern = enable_vimade_filetypes,
+  callback = function()
+    vim.defer_fn(function()
+      require("vimade.focus.api").toggle_on()
+    end, 5)
+  end,
+})
+
+local vimade_docus_active = false
+
+-- minifiles is handled specially
+local disable_vimade_filetypes = {
+  "snacks_picker_input",
+}
+
+autocmd({ "FileType" }, {
+  pattern = disable_vimade_filetypes,
+  callback = function()
+    local vimade = require("vimade.focus.api")
+    vimade_docus_active = vimade.global_focus_enabled()
+    if vimade_docus_active then
+      vimade.toggle_off()
+    end
+  end,
+})
+
+autocmd({ "BufLeave" }, {
+  callback = function()
+    for _, filetype in ipairs(disable_vimade_filetypes) do
+      if vim.bo.filetype == filetype then
+        if vim.bo.filetype == "snacks_picker_input" then
+          if vimade_docus_active then
+            require("vimade.focus.api").toggle_on()
+          end
+        end
+      end
+    end
+  end,
+})
+
 autocmd({ "FileType" }, {
   pattern = { "ruby", "html", "yaml", "javascript" },
   callback = function()
@@ -192,6 +238,11 @@ autocmd("User", {
   pattern = "MiniFilesExplorerOpen",
   -- pattern = { "minifiles" },
   callback = function()
+    local vimade = require("vimade.focus.api")
+    vimade_docus_active = vimade.global_focus_enabled()
+    if vimade_docus_active then
+      vimade.toggle_off()
+    end
     local bufnr = vim.api.nvim_get_current_buf()
     updateGitStatus(bufnr)
   end,
@@ -201,6 +252,9 @@ autocmd("User", {
   group = augroup("close"),
   pattern = "MiniFilesExplorerClose",
   callback = function()
+    if vimade_docus_active then
+      require("vimade.focus.api").toggle_on()
+    end
     clearCache()
   end,
 })

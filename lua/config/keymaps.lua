@@ -104,11 +104,6 @@ vim.keymap.set("v", "<leader>r", function()
   vim.api.nvim_open_win(bufnr, true, win_opts)
 end, { noremap = true })
 
-vim.keymap.set({ "n", "v" }, "<S-j>", "<cmd>Treewalker Down<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "<S-k>", "<cmd>Treewalker Up<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "<S-h>", "<cmd>Treewalker Left<CR>", { noremap = true })
-vim.keymap.set({ "n", "v" }, "<S-l>", "<cmd>Treewalker Right<CR>", { noremap = true })
-
 vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
 -- my dumb ass pressing the wrong key to leave
@@ -135,6 +130,10 @@ vim.keymap.set("i", "<C-p>", "<C-o>k", { noremap = true })
 vim.keymap.set("i", "<C-b>", "<C-o>h", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<C-o>l", { noremap = true })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { noremap = true })
+
+vim.keymap.set("n", ";", ":", { noremap = true })
+
+vim.keymap.set("n", "g/", ":vimgrep /<C-R>//j %<CR>|:cw<CR>", { noremap = true, silent = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

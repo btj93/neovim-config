@@ -31,6 +31,11 @@ return {
         ecolog = { name = "ecolog", module = "ecolog.integrations.cmp.blink_cmp" },
       },
     },
+    completion = {
+      trigger = {
+        show_on_insert_on_trigger_character = false,
+      },
+    },
     keymap = {
       preset = "default",
       ["<Down>"] = {
