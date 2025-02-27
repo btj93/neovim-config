@@ -16,8 +16,6 @@ return {
       search = {
         enabled = true,
         default_animation = "pulse",
-        next_mapping = "nzzzv",
-        prev_mapping = "Nzzzv",
       },
       paste = {
         enabled = true,
