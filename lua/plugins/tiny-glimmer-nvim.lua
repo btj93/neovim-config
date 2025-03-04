@@ -1,6 +1,5 @@
 return {
   "rachartier/tiny-glimmer.nvim",
-  event = "VeryLazy",
   keys = { { "p" }, { "P" }, { "n" }, { "N" }, { "*" }, { "u" }, { "<C-r>" } },
   opts = {
     enabled = true,
