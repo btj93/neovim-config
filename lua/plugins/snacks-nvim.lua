@@ -13,6 +13,15 @@ return {
       matcher = {
         frecency = true, -- frecency bonus
       },
+      win = {
+        -- input window
+        input = {
+          keys = {
+            ["<C-b>"] = { "<Left>", mode = { "i" }, expr = true },
+            ["<C-f>"] = { "<Right>", mode = { "i" }, expr = true },
+          },
+        },
+      },
     },
     indent = {
       chunk = {
