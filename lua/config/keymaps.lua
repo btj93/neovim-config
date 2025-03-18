@@ -135,6 +135,12 @@ vim.keymap.set("n", ";", ":", { noremap = true })
 
 vim.keymap.set("n", "g/", ":vimgrep /<C-R>//j %<CR>|:cw<CR>", { noremap = true, silent = true })
 
+vim.keymap.set("v", "gj", "J", { noremap = true })
+
+-- Move to start/end of line
+vim.keymap.set("n", "gh", "^", { noremap = true })
+vim.keymap.set("n", "gl", "$", { noremap = true })
+
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
 ---@return TSNode|nil
