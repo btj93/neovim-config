@@ -37,7 +37,7 @@ return {
     }
 
     local icons = LazyVim.config.icons
-    opts.sections.lualine_c = {
+    opts.sections.lualine_b = {
       LazyVim.lualine.root_dir(),
       {
         "diagnostics",
@@ -70,6 +70,10 @@ return {
         end,
         icon = "",
       },
+    }
+    opts.sections.lualine_c = {
+      "%=",
+      { require("harpoon_files").lualine_component, separator = { left = "<", right = ">" } },
     }
   end,
 }

@@ -41,7 +41,9 @@ return {
       function()
         require("namu.namu_symbols").show()
       end,
-      { noremap = true, mode = "n", desc = "Jump to LSP symbol" },
+      noremap = true,
+      mode = "n",
+      desc = "Jump to LSP symbol",
     },
   },
 }

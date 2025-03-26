@@ -9,6 +9,12 @@ local enable_vimade_filetypes = {
   "lua",
 }
 
+local enable_harpoon_filetypes = {
+  "go",
+  "lua",
+  "markdown",
+}
+
 autocmd({ "FileType" }, {
   pattern = enable_vimade_filetypes,
   callback = function()
@@ -18,7 +24,7 @@ autocmd({ "FileType" }, {
   end,
 })
 
-local vimade_docus_active = false
+local vimade_focus_active = false
 
 -- minifiles is handled specially
 local disable_vimade_filetypes = {
@@ -29,9 +35,38 @@ autocmd({ "FileType" }, {
   pattern = disable_vimade_filetypes,
   callback = function()
     local vimade = require("vimade.focus.api")
-    vimade_docus_active = vimade.global_focus_enabled()
-    if vimade_docus_active then
+    vimade_focus_active = vimade.global_focus_enabled()
+    if vimade_focus_active then
       vimade.toggle_off()
+    end
+  end,
+})
+
+-- https://github.com/ThePrimeagen/harpoon/blob/ed1f853847ffd04b2b61c314865665e1dadf22c7/lua/harpoon/config.lua#L4
+local Path = require("plenary.path")
+local function normalize_path(buf_name, root)
+  return Path:new(buf_name):make_relative(root)
+end
+
+-- auto mark harpoon2
+autocmd({ "FileType" }, {
+  pattern = enable_harpoon_filetypes,
+  callback = function()
+    local harpoon = require("harpoon")
+    local config = require("harpoon.config").get_config(harpoon.config)
+    local root = config.get_root_dir()
+    local p = normalize_path(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), root)
+
+    local item = harpoon:list():get_by_value(p)
+    -- already in harpoon
+    if item then
+      -- maybe we should change the order?
+    else
+      -- keep last 4
+      if harpoon:list():length() >= 4 then
+        harpoon:list():remove_at(4)
+      end
+      harpoon:list():prepend()
     end
   end,
 })
@@ -41,7 +76,7 @@ autocmd({ "BufLeave" }, {
     for _, filetype in ipairs(disable_vimade_filetypes) do
       if vim.bo.filetype == filetype then
         if vim.bo.filetype == "snacks_picker_input" then
-          if vimade_docus_active then
+          if vimade_focus_active then
             require("vimade.focus.api").toggle_on()
           end
         end
@@ -239,8 +274,8 @@ autocmd("User", {
   -- pattern = { "minifiles" },
   callback = function()
     local vimade = require("vimade.focus.api")
-    vimade_docus_active = vimade.global_focus_enabled()
-    if vimade_docus_active then
+    vimade_focus_active = vimade.global_focus_enabled()
+    if vimade_focus_active then
       vimade.toggle_off()
     end
     local bufnr = vim.api.nvim_get_current_buf()
@@ -252,7 +287,7 @@ autocmd("User", {
   group = augroup("close"),
   pattern = "MiniFilesExplorerClose",
   callback = function()
-    if vimade_docus_active then
+    if vimade_focus_active then
       require("vimade.focus.api").toggle_on()
     end
     clearCache()
