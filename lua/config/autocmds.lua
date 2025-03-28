@@ -13,6 +13,8 @@ local enable_harpoon_filetypes = {
   "go",
   "lua",
   "markdown",
+  "python",
+  "java",
 }
 
 autocmd({ "FileType" }, {
