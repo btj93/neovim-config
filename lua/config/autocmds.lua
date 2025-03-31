@@ -17,14 +17,14 @@ local enable_harpoon_filetypes = {
   "java",
 }
 
-autocmd({ "FileType" }, {
-  pattern = enable_vimade_filetypes,
-  callback = function()
-    vim.defer_fn(function()
-      require("vimade.focus.api").toggle_on()
-    end, 5)
-  end,
-})
+-- autocmd({ "FileType" }, {
+--   pattern = enable_vimade_filetypes,
+--   callback = function()
+--     vim.defer_fn(function()
+--       require("vimade.focus.api").toggle_on()
+--     end, 5)
+--   end,
+-- })
 
 local vimade_focus_active = false
 
@@ -242,10 +242,15 @@ end
 ---@return nil
 local function updateGitStatus(buf_id)
   if vim.fn.system("git rev-parse --show-toplevel 2> /dev/null") == "" then
-    vim.notify("Not a valid git repo")
+    -- vim.notify("Not a valid git repo")
     return
   end
-  local cwd = vim.fn.expand("%:p:h")
+  local cwd = vim.fs.root(buf_id, ".git")
+  if not cwd then
+    -- vim.notify("Not a valid git repo")
+    return
+  end
+
   local currentTime = os.time()
   if gitStatusCache[cwd] and currentTime - gitStatusCache[cwd].time < cacheTimeout then
     updateMiniWithGit(buf_id, gitStatusCache[cwd].statusMap)
@@ -301,7 +306,13 @@ autocmd("User", {
   pattern = "MiniFilesBufferUpdate",
   callback = function(sii)
     local bufnr = sii.data.buf_id
-    local cwd = vim.fn.expand("%:p:h")
+
+    local cwd = vim.fs.root(bufnr, ".git")
+    if not cwd then
+      -- vim.notify("Not a valid git repo")
+      return
+    end
+
     if gitStatusCache[cwd] then
       updateMiniWithGit(bufnr, gitStatusCache[cwd].statusMap)
     end
