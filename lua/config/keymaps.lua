@@ -131,19 +131,29 @@ vim.keymap.set("i", "<C-b>", "<Left>", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<Right>", { noremap = true })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { noremap = true })
 
--- Bigger movement in insert mode
+-- Larger movement in insert mode
 vim.keymap.set("i", "<M-f>", "<C-o>w", { noremap = true })
 vim.keymap.set("i", "<M-b>", "<C-o>b", { noremap = true })
 
 vim.keymap.set("n", ";", ":", { noremap = true })
 
+-- / to search, then g/ to put them into the quickfix list
 vim.keymap.set("n", "g/", ":vimgrep /<C-R>//j %<CR>|:cw<CR>", { noremap = true, silent = true })
 
+-- minify lines
 vim.keymap.set("v", "gj", "J", { noremap = true })
 
+-- Toggle diagnostic virtual lines and virtual text
+vim.keymap.set("n", "<leader>ud", function()
+  vim.diagnostic.config({
+    virtual_lines = not vim.diagnostic.config().virtual_lines,
+    virtual_text = not vim.diagnostic.config().virtual_text,
+  })
+end, { desc = "Toggle diagnostic virtual lines and virtual text" })
+
 -- Move to start/end of line
-vim.keymap.set("n", "gh", "^", { noremap = true })
-vim.keymap.set("n", "gl", "$", { noremap = true })
+vim.keymap.set({ "n", "v" }, "gh", "_", { noremap = true })
+vim.keymap.set({ "n", "v" }, "gl", "$", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

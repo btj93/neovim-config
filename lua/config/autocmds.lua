@@ -10,11 +10,19 @@ local enable_vimade_filetypes = {
 }
 
 local enable_harpoon_filetypes = {
-  "go",
-  "lua",
-  "markdown",
-  "python",
-  "java",
+  "*.*",
+  "Makefile",
+  "Dockerfile",
+  -- "*.go",
+  -- "*.lua",
+  -- "*.md",
+  -- "*.py",
+  -- "*.java",
+  -- ".env*",
+  -- "*.json",
+  -- "*.yml",
+  -- "*.yaml",
+  -- "*.d2",
 }
 
 -- autocmd({ "FileType" }, {
@@ -51,13 +59,20 @@ local function normalize_path(buf_name, root)
 end
 
 -- auto mark harpoon2
-autocmd({ "FileType" }, {
+-- Fixed issue where when more than 5 buffers are open, if you switch to the oldest one, it will not be marked
+-- not ideal since it triggers on every movement
+autocmd({ "CursorMoved" }, {
   pattern = enable_harpoon_filetypes,
   callback = function()
     local harpoon = require("harpoon")
     local config = require("harpoon.config").get_config(harpoon.config)
     local root = config.get_root_dir()
     local p = normalize_path(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), root)
+
+    local start = "minifiles"
+    if p:sub(1, #start) == start then
+      return
+    end
 
     local item = harpoon:list():get_by_value(p)
     -- already in harpoon
@@ -88,7 +103,7 @@ autocmd({ "BufLeave" }, {
 })
 
 autocmd({ "FileType" }, {
-  pattern = { "ruby", "html", "yaml", "javascript" },
+  pattern = { "ruby" },
   callback = function()
     vim.b.autoformat = false
   end,
@@ -316,5 +331,12 @@ autocmd("User", {
     if gitStatusCache[cwd] then
       updateMiniWithGit(bufnr, gitStatusCache[cwd].statusMap)
     end
+  end,
+})
+
+autocmd("FileType", {
+  pattern = { "java" },
+  callback = function()
+    vim.opt_local.spell = false
   end,
 })
