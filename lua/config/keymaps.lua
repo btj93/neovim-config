@@ -10,8 +10,6 @@ vim.keymap.set({ "i" }, "<S-Tab>", "<C-D>", { noremap = true, desc = "Remove ind
 vim.keymap.set({ "v" }, "<Tab>", ">gv", { noremap = true, desc = "Add indent" })
 vim.keymap.set({ "v" }, "<S-Tab>", "<gv", { noremap = true, desc = "Remove indent" })
 
--- remap gg
-vim.keymap.set({ "n" }, "gg", "ggzz", { noremap = true, desc = "Go to top" })
 -- remap G
 vim.keymap.set({ "n" }, "G", "Gzz", { noremap = true, desc = "Go to bottom" })
 -- remap jk
@@ -34,6 +32,23 @@ vim.keymap.set({ "n" }, "<leader>dd", toggle_diff, { noremap = true, desc = "Dif
 
 -- Duplicate a line and comment out the first line
 vim.keymap.set("n", "yc", "yy<cmd>normal gcc<CR>p", { noremap = true, desc = "Duplicate a line and comment" })
+
+local function duplicate_and_comment()
+  -- Escape the visual mode
+  local esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
+  vim.api.nvim_feedkeys(esc, "x", false)
+
+  -- Get the selected text
+  local start_line, end_line = vim.fn.line("'<"), vim.fn.line("'>")
+
+  -- Duplicate the selected lines
+  vim.cmd(start_line .. "," .. end_line .. "yank")
+  vim.cmd(end_line + 1 .. "put")
+  vim.api.nvim_feedkeys("gv", "n", false)
+  vim.api.nvim_feedkeys("gc", "v", false)
+end
+
+vim.keymap.set("v", "yc", duplicate_and_comment, { noremap = true, desc = "Duplicate selection and comment" })
 
 -- From the Vim wiki: https://bit.ly/4eLAARp
 -- Search and replace word under cursor
@@ -154,6 +169,10 @@ end, { desc = "Toggle diagnostic virtual lines and virtual text" })
 -- Move to start/end of line
 vim.keymap.set({ "n", "v" }, "gh", "_", { noremap = true })
 vim.keymap.set({ "n", "v" }, "gl", "$", { noremap = true })
+
+-- Delete / Change up to next quote
+vim.keymap.set({ "n" }, "dq", "v/[\"'`]<CR><Left>d", { noremap = true })
+vim.keymap.set({ "n" }, "cq", "v/[\"'`]<CR><Left>di", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

@@ -69,9 +69,15 @@ autocmd({ "CursorMoved" }, {
     local root = config.get_root_dir()
     local p = normalize_path(vim.api.nvim_buf_get_name(vim.api.nvim_get_current_buf()), root)
 
-    local start = "minifiles"
-    if p:sub(1, #start) == start then
-      return
+    local starts = {
+      "minifiles",
+      "term",
+    }
+
+    for _, start in ipairs(starts) do
+      if p:sub(1, #start) == start then
+        return
+      end
     end
 
     local item = harpoon:list():get_by_value(p)
