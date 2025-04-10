@@ -44,7 +44,11 @@ local function duplicate_and_comment()
   -- Duplicate the selected lines
   vim.cmd(start_line .. "," .. end_line .. "yank")
   vim.cmd(end_line + 1 .. "put")
+
+  -- reselect previous visual selection
   vim.api.nvim_feedkeys("gv", "n", false)
+
+  -- comment the visual selection
   vim.api.nvim_feedkeys("gc", "v", false)
 end
 
@@ -170,9 +174,10 @@ end, { desc = "Toggle diagnostic virtual lines and virtual text" })
 vim.keymap.set({ "n", "v" }, "gh", "_", { noremap = true })
 vim.keymap.set({ "n", "v" }, "gl", "$", { noremap = true })
 
--- Delete / Change up to next quote
-vim.keymap.set({ "n" }, "dq", "v/[\"'`]<CR><Left>d", { noremap = true })
-vim.keymap.set({ "n" }, "cq", "v/[\"'`]<CR><Left>di", { noremap = true })
+-- Operations up to next quote
+vim.keymap.set({ "n" }, "dq", "v/[\"'`]<CR><Left>d<cmd>nohlsearch<CR>", { noremap = true })
+vim.keymap.set({ "n" }, "yq", "v/[\"'`]<CR><Left>y<cmd>nohlsearch<CR>", { noremap = true })
+vim.keymap.set({ "n" }, "cq", "v/[\"'`]<CR><Left>di<cmd>nohlsearch<CR>", { noremap = true })
 
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil

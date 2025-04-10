@@ -2,6 +2,10 @@ return {
   "folke/snacks.nvim",
   opts = {
     picker = {
+      exclude = { -- add folder names here to exclude
+        ".git",
+        "node_modules",
+      },
       sources = {
         files = { hidden = true, ignored = true },
       },
