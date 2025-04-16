@@ -34,6 +34,18 @@ return {
         end,
         desc = "Harpoon to File " .. i,
       })
+      table.insert(keys, {
+        "<leader>d" .. i,
+        function()
+          local l = require("harpoon"):list():length()
+          require("harpoon"):list():remove_at(i)
+          for j = i + 1, l do
+            local item = require("harpoon"):list():get(j)
+            require("harpoon"):list():replace_at(j - 1, item)
+          end
+        end,
+        desc = "Harpoon Remove File " .. i,
+      })
     end
     return keys
   end,

@@ -20,8 +20,8 @@ return {
             move = "j"
           end
           local ns = vim.api.nvim_create_namespace("border")
-          vim.api.nvim_buf_add_highlight(0, ns, "Substitute", top - 1, 0, -1)
-          vim.api.nvim_buf_add_highlight(0, ns, "Substitute", bottom - 1, 0, -1)
+          -- vim.hl.range(0, ns, "Substitute", { top - 1, 0 }, { top - 1, -1 })
+          -- vim.hl.range(0, ns, "Substitute", { bottom - 1, 0 }, { bottom - 1, -1 })
           vim.defer_fn(function()
             vim.api.nvim_buf_set_text(0, top - 1, 0, top - 1, -1, {})
             vim.api.nvim_buf_set_text(0, bottom - 1, 0, bottom - 1, -1, {})

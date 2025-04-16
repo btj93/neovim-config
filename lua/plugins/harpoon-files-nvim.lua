@@ -4,6 +4,6 @@ return {
     { "ThePrimeagen/harpoon", branch = "harpoon2" },
   },
   opts = {
-    max_length = 20,
+    max_length = 15,
   },
 }
