@@ -5,7 +5,7 @@ Refer to the [documentation](https://lazyvim.github.io/installation) to get star
 
 ## Font
 
-Any nerd font should work. I use CaskaydiaCove Nerd Font.
+Any nerd font should work. I use [Cascadia Mono NF](https://github.com/microsoft/cascadia-code).
 
 ## Installation
 
@@ -13,4 +13,4 @@ Any nerd font should work. I use CaskaydiaCove Nerd Font.
 brew install neovim
 ```
 
-Follow LazyVim's [installation guide](https://www.lazyvim.org/installation) to install, but replace the repository url with this repository.
+Follow LazyVim's [installation guide](https://www.lazyvim.org/installation), but replace the repository url with this repository.

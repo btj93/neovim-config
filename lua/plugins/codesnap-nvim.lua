@@ -1,6 +1,7 @@
 return {
   "mistricky/codesnap.nvim",
   build = "make",
+  cmd = { "CodeSnap", "CodeSnapSave", "CodeSnapHighlight" },
   keys = {
     { "cc", "<Esc><cmd>CodeSnap<cr>", mode = "v", desc = "Code snap to clipboard" },
     { "cs", "<Esc><cmd>CodeSnapSave<cr>", mode = "v", desc = "Code snap to file" },
