@@ -22,6 +22,9 @@ return {
       "toggleterm",
       direction = "vertical",
       size = 50,
+      on_create = function()
+        vim.cmd("stopinsert!")
+      end,
     },
     templates = { "builtin", "go", "d2" },
     task_list = {

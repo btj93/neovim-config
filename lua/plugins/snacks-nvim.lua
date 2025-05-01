@@ -1,6 +1,9 @@
 return {
   "folke/snacks.nvim",
   opts = {
+    scratch = {
+      enabled = false,
+    },
     picker = {
       exclude = { -- add folder names here to exclude
         ".git",
@@ -133,6 +136,10 @@ return {
         Snacks.notifier.show_history()
       end,
       desc = "Notification History",
+    },
+    {
+      "<leader>.",
+      false,
     },
   },
 }
