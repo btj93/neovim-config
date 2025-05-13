@@ -179,6 +179,9 @@ vim.keymap.set({ "n" }, "dq", "v/[\"'`]<CR><Left>d<cmd>nohlsearch<CR>", { norema
 vim.keymap.set({ "n" }, "yq", "v/[\"'`]<CR><Left>y<cmd>nohlsearch<CR>", { noremap = true })
 vim.keymap.set({ "n" }, "cq", "v/[\"'`]<CR><Left>di<cmd>nohlsearch<CR>", { noremap = true })
 
+-- Disable vanilla marks
+vim.keymap.set({ "n" }, "m", "<Nop>", { noremap = true })
+
 ---@param types string[] Will return the first node that matches one of these types
 ---@param node TSNode|nil
 ---@return TSNode|nil
@@ -329,7 +332,7 @@ local function get_definition_by_position(bufnr, position)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
   -- Prepare the parameters for the LSP request
-  local params = vim.lsp.util.make_position_params(0)
+  local params = vim.lsp.util.make_position_params(0, "utf-8")
   params.position.line = position[1] -- Line (0-indexed)
   params.position.character = position[2] -- Column (0-indexed)
   -- change the uri manually as make_position_params can only handle buffers with a window
@@ -417,7 +420,8 @@ local function struct_to_json_string(node, buf)
     if json_tag then
       local row, column, _ = type:start()
       -- vim.notify("row" .. row .. "column" .. column, vim.log.levels.INFO)
-      -- FIXME:  *time.Time will only jump if the cursor is on `Time`
+      -- FIXME: *time.Time will only jump if the cursor is on `Time`
+      -- FIXME: support slices
       local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
 
       if uri and range then

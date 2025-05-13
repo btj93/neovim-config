@@ -11,7 +11,9 @@ return {
     },
   },
   event = "LspAttach",
-  opts = {},
+  opts = {
+    backend = "difftastic",
+  },
   keys = {
     {
       "<leader>ca",
