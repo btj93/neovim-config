@@ -298,9 +298,16 @@ local function get_value_by_go_type(type)
   -- TODO: Handle map
   -- e.g. map[CardColor][]string
 
-  -- FIXME: Don't think this is correct for slices nor map
-  if type:find("[]", 1, true) then
+  -- map
+  if type:find("map", 1, true) then
+    -- TODO: insert key and value
     return "{}"
+  end
+
+  -- slice
+  if type:find("[]", 1, true) then
+    -- TODO: insert value
+    return "[]"
   end
 
   -- TODO: add option to treat pointer as non-pointer type
@@ -374,10 +381,106 @@ local buffer_to_string = function(buf)
   return table.concat(content, "\n")
 end
 
+---@param type TSNode
+---@param buf number
+---@return string
+local function type_to_val(type, buf)
+  local type_string = type:type()
+  local array_ts_type = { "array_type", "slice_type" }
+  if vim.tbl_contains(array_ts_type, type_string) then
+    local element = type_to_val(type:field("element")[1], buf)
+    return "[" .. element .. "]"
+  end
+  if type_string == "channel_type" then
+    return ""
+  end
+  if type_string == "function_type" then
+    return ""
+  end
+  if type_string == "generic_type" then
+    return ""
+  end
+  if type_string == "interface_type" then
+    return ""
+  end
+  if type_string == "map_type" then
+    local key = type_to_val(type:field("key")[1], buf)
+    local value = type_to_val(type:field("value")[1], buf)
+    return "{" .. key .. ":" .. value .. "}"
+  end
+  if type_string == "negated_type" then
+    return ""
+  end
+  if type_string == "pointer_type" then
+    return "null"
+  end
+
+  -- time.Time, xxx.xxx
+  if type_string == "qualified_type" then
+    local name = type:field("name")[1]
+
+    return Create_buffer(buf, name)
+  end
+  if type_string == "struct_type" then
+    return "{}"
+  end
+  if type_string == "type_identifier" then
+    return Create_buffer(buf, type)
+  end
+
+  return ""
+end
+
+---@param buf number
+---@param type TSNode
+---@return string
+function Create_buffer(buf, type)
+  local row, column, _ = type:start()
+  local type_text = vim.treesitter.get_node_text(type, buf)
+  local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
+
+  if uri and range then
+    uri = uri:gsub("file://", "")
+    local working_dir = vim.fn.getcwd()
+    if not uri:find(working_dir, 1, true) then
+      -- it is go type, don't create buffer
+      return get_value_by_go_type(type_text)
+    end
+    local escaped_working_dir = working_dir:gsub("([^%w])", "%%%1")
+    local f = uri:gsub(escaped_working_dir, ".")
+    local buffer = find_buffer_by_name(uri)
+
+    local created_buffer = false
+    if buffer == -1 then
+      buffer = vim.api.nvim_create_buf(true, false)
+      vim.api.nvim_buf_set_name(buffer, f)
+      vim.api.nvim_buf_call(buffer, vim.cmd.edit)
+      created_buffer = true
+    end
+
+    vim.treesitter.get_parser(buffer, "go"):parse(true)
+
+    local c = vim.treesitter.get_node({
+      bufnr = buffer,
+      lang = "go",
+      pos = { range.start.line, range.start.character },
+    })
+
+    -- Recursively get value
+    local value = Struct_to_json_string(c, buffer)
+    if created_buffer then
+      vim.api.nvim_buf_delete(buffer, { force = true, unload = false })
+    end
+
+    return value
+  end
+  return ""
+end
+
 ---@param node TSNode|nil
 ---@param buf number
 ---@return string
-local function struct_to_json_string(node, buf)
+function Struct_to_json_string(node, buf)
   if node == nil then
     local current_line = vim.fn.getline(".")
     if not current_line:find("struct", 1, true) then
@@ -418,48 +521,7 @@ local function struct_to_json_string(node, buf)
     -- default value
     local value = get_value_by_go_type("string")
     if json_tag then
-      local row, column, _ = type:start()
-      -- vim.notify("row" .. row .. "column" .. column, vim.log.levels.INFO)
-      -- FIXME: *time.Time will only jump if the cursor is on `Time`
-      -- FIXME: support slices
-      local uri, range = get_definition_by_position(buf, { row, column }) -- 0-indexed
-
-      if uri and range then
-        uri = uri:gsub("file://", "")
-        local working_dir = vim.fn.getcwd()
-        local type_text = vim.treesitter.get_node_text(type, buf)
-        if not uri:find(working_dir, 1, true) then
-          -- it is go type, don't create buffer
-          value = get_value_by_go_type(type_text)
-          goto continue
-        end
-        local escaped_working_dir = working_dir:gsub("([^%w])", "%%%1")
-        local f = uri:gsub(escaped_working_dir, ".")
-        local buffer = find_buffer_by_name(uri)
-
-        local created_buffer = false
-        if buffer == -1 then
-          buffer = vim.api.nvim_create_buf(true, false)
-          vim.api.nvim_buf_set_name(buffer, f)
-          vim.api.nvim_buf_call(buffer, vim.cmd.edit)
-          created_buffer = true
-        end
-
-        vim.treesitter.get_parser(buffer, "go"):parse(true)
-
-        local c = vim.treesitter.get_node({
-          bufnr = buffer,
-          lang = "go",
-          pos = { range.start.line, range.start.character },
-        })
-
-        -- Recursively get value
-        value = struct_to_json_string(c, buffer)
-        if created_buffer then
-          vim.api.nvim_buf_delete(buffer, { force = true, unload = false })
-        end
-      end
-      ::continue::
+      value = type_to_val(type, buf)
       table.insert(json_fields, { json_tag, value })
     end
   end
@@ -478,7 +540,7 @@ local function struct_to_json()
     return
   end
 
-  local json = struct_to_json_string(nil, 0)
+  local json = Struct_to_json_string(nil, 0)
 
   if json == '""' then
     vim.notify("No JSON tag found", vim.log.levels.INFO)
