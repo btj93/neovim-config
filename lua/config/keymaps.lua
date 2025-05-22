@@ -370,7 +370,8 @@ local function type_to_val(type, buf)
   }
   if vim.tbl_contains(array_ts_type, type_string) then
     local element = type_to_val(type:field("element")[1], buf)
-    return "[" .. element .. "]"
+    local s = ("[" .. element .. "]"):gsub("\n", "\n  ")
+    return s
   end
 
   if vim.tbl_contains(string_ts_type, type_string) then
@@ -380,10 +381,12 @@ local function type_to_val(type, buf)
   if type_string == "map_type" then
     local key = type_to_val(type:field("key")[1], buf)
     local value = type_to_val(type:field("value")[1], buf)
-    return "{" .. key .. ":" .. value .. "}"
+    local s = ("{\n" .. key .. ": " .. value):gsub("\n", "\n  ")
+    return s .. "\n}"
   end
 
   if type_string == "pointer_type" then
+    -- add options to treat pointer as non-pointer type
     return "null"
   end
 
@@ -486,14 +489,12 @@ function Struct_to_json_string(node, buf)
   local json_fields = {}
 
   for _, field in ipairs(field_declaration_list:named_children()) do
-    -- TODO: Handle nested fields
     local type = field:field("type")[1]
     local json_tag = extract_json_tag(field, buf)
 
-    -- default value
-    local value = get_value_by_go_type("string")
+    -- add options to marshal fields without json tag
     if json_tag then
-      value = type_to_val(type, buf)
+      local value = type_to_val(type, buf)
       table.insert(json_fields, { json_tag, value })
     end
   end
@@ -502,7 +503,6 @@ function Struct_to_json_string(node, buf)
     return '""'
   end
 
-  -- print(dump(json_fields))
   return concat_json_fields(json_fields)
 end
 

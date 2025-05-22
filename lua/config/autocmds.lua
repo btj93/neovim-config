@@ -72,6 +72,8 @@ autocmd({ "CursorMoved" }, {
     local starts = {
       "minifiles",
       "term",
+      "Syntax tree",
+      "/opt/homebrew",
     }
 
     for _, start in ipairs(starts) do
