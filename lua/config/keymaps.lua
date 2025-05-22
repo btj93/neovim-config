@@ -295,27 +295,6 @@ local bool_types = { "bool" }
 ---@param type string
 ---@return string
 local function get_value_by_go_type(type)
-  -- TODO: Handle map
-  -- e.g. map[CardColor][]string
-
-  -- map
-  if type:find("map", 1, true) then
-    -- TODO: insert key and value
-    return "{}"
-  end
-
-  -- slice
-  if type:find("[]", 1, true) then
-    -- TODO: insert value
-    return "[]"
-  end
-
-  -- TODO: add option to treat pointer as non-pointer type
-  -- FIXME: also this will fail for a map pointer
-  if type:find("*", 1, true) then
-    return "null"
-  end
-
   if vim.tbl_contains(int_types, type) then
     return "0"
   end
@@ -376,41 +355,34 @@ local function get_definition_by_position(bufnr, position)
   end
 end
 
-local buffer_to_string = function(buf)
-  local content = vim.api.nvim_buf_get_lines(buf, 0, vim.api.nvim_buf_line_count(buf), false)
-  return table.concat(content, "\n")
-end
-
 ---@param type TSNode
 ---@param buf number
 ---@return string
 local function type_to_val(type, buf)
   local type_string = type:type()
   local array_ts_type = { "array_type", "slice_type" }
+  local string_ts_type = {
+    "channel_type",
+    "function_type",
+    "generic_type",
+    "interface_type",
+    "negated_type",
+  }
   if vim.tbl_contains(array_ts_type, type_string) then
     local element = type_to_val(type:field("element")[1], buf)
     return "[" .. element .. "]"
   end
-  if type_string == "channel_type" then
-    return ""
+
+  if vim.tbl_contains(string_ts_type, type_string) then
+    return '""'
   end
-  if type_string == "function_type" then
-    return ""
-  end
-  if type_string == "generic_type" then
-    return ""
-  end
-  if type_string == "interface_type" then
-    return ""
-  end
+
   if type_string == "map_type" then
     local key = type_to_val(type:field("key")[1], buf)
     local value = type_to_val(type:field("value")[1], buf)
     return "{" .. key .. ":" .. value .. "}"
   end
-  if type_string == "negated_type" then
-    return ""
-  end
+
   if type_string == "pointer_type" then
     return "null"
   end
