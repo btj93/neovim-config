@@ -126,12 +126,18 @@ end, { noremap = true })
 vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
 -- my dumb ass pressing the wrong key to leave
+-- yoinked from https://www.reddit.com/r/neovim/comments/1lyqqdz/why_when_i_write_a_file_does_it_disappear_from_my/
+local typos = { "W", "Wq", "WQ", "Wqa", "WQa", "WQA", "WqA", "Q", "Qa", "QA" }
+for _, cmd in ipairs(typos) do
+  vim.api.nvim_create_user_command(cmd, function(opts)
+    vim.api.nvim_cmd({
+      cmd = cmd:lower(),
+      bang = opts.bang,
+      mods = { noautocmd = true },
+    }, {})
+  end, { bang = true })
+end
 vim.keymap.set({ "n" }, "q:", "<nop>", { noremap = true })
-vim.api.nvim_create_user_command("WQ", "wq", {})
-vim.api.nvim_create_user_command("Wq", "wq", {})
-vim.api.nvim_create_user_command("W", "w", {})
-vim.api.nvim_create_user_command("Qa", "qa", {})
-vim.api.nvim_create_user_command("Q", "q", {})
 
 -- Center search results
 -- yoinked from https://vim.fandom.com/wiki/Make_search_results_appear_in_the_middle_of_the_screen

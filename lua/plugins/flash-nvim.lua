@@ -8,5 +8,14 @@ return {
       --   shade = 5,
       -- },
     },
+    modes = {
+      -- options used when flash is activated through
+      -- a regular search with `/` or `?`
+      -- options used when flash is activated through
+      -- `f`, `F`, `t`, `T`, `;` and `,` motions
+      char = {
+        enabled = false,
+      },
+    },
   },
 }
