@@ -15,6 +15,7 @@ vim.keymap.set({ "n" }, "G", "Gzz", { noremap = true, desc = "Go to bottom" })
 -- remap jk
 vim.keymap.set({ "i" }, "jk", "<Esc>", { noremap = true, desc = "jk to escape" })
 vim.keymap.set({ "i" }, "JK", "<Esc>", { noremap = true, desc = "JK to escape" })
+vim.keymap.set({ "i" }, "Jk", "<Esc>", { noremap = true, desc = "Jk to escape" })
 
 -- remap page up and page down
 vim.keymap.set({ "n", "v" }, "<C-d>", "5jzz")
