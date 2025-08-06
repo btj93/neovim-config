@@ -98,17 +98,17 @@ return {
     --   mode = "n",
     --   desc = "Smart Find",
     -- },
-    {
-      "<leader><space>",
-      function()
-        Snacks.picker.files({
-          -- hidden = true,
-          -- ignored = true,
-        })
-      end,
-      mode = "n",
-      desc = "Find Files",
-    },
+    -- {
+    --   "<leader><space>",
+    --   function()
+    --     Snacks.picker.files({
+    --       -- hidden = true,
+    --       -- ignored = true,
+    --     })
+    --   end,
+    --   mode = "n",
+    --   desc = "Find Files",
+    -- },
     {
       "<leader>/",
       function()

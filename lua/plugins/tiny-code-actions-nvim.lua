@@ -13,6 +13,7 @@ return {
   event = "LspAttach",
   opts = {
     backend = "difftastic",
+    picker = "snacks",
   },
   keys = {
     {
