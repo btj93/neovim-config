@@ -110,6 +110,10 @@ return {
     --   desc = "Find Files",
     -- },
     {
+      "<leader><space>",
+      false,
+    },
+    {
       "<leader>/",
       function()
         Snacks.picker.grep({
