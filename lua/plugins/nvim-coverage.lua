@@ -17,7 +17,7 @@ return {
       desc = "Toggle Test Coverage",
     },
     {
-      "<leader>ts",
+      "<leader>tS",
       function()
         if vim.bo.filetype == "coverage" then
           vim.cmd("quit")

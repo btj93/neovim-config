@@ -4,8 +4,13 @@ return {
   -- or if you are using nixos
   -- build = "nix run .#release",
   opts = {
-    -- pass here all the options
+    title = "Freakin Fast Fuzzy File Finder",
+    debug = {
+      enabled = true, -- we expect your collaboration at least during the beta
+      show_scores = true, -- to help us optimize the scoring system, feel free to share your scores!
+    },
   },
+  lazy = false,
   keys = {
     {
       "<leader><space>", -- try it if you didn't it is a banger keybinding for a picker
