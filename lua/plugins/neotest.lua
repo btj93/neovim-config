@@ -1,15 +1,16 @@
 return {
   "nvim-neotest/neotest",
   dependencies = {
-    { "fredrikaverpil/neotest-golang", version = "*" }, -- Installation
+    { "fredrikaverpil/neotest-golang", version = "*" },
   },
   config = function()
     local neotest_golang_opts = {
       testify_enabled = true,
-    } -- Specify custom configuration
+      runner = "gotestsum",
+    }
     require("neotest").setup({
       adapters = {
-        require("neotest-golang")(neotest_golang_opts), -- Registration
+        require("neotest-golang")(neotest_golang_opts),
       },
     })
   end,

@@ -11,6 +11,13 @@ return {
         },
         filetype = "feature",
       }
+      require("nvim-treesitter.configs").setup({
+        highlight = {
+          enable = { "gherkin" },
+
+          additional_vim_regex_highlighting = false,
+        },
+      })
     end,
     opts = function(_, opts)
       -- Register the Gherkin language for .feature files
