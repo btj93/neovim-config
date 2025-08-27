@@ -1,7 +1,9 @@
 return {
   {
     "nvim-treesitter/nvim-treesitter",
-    config = function(_, opts)
+    opts = function(_, opts)
+      -- Register the Gherkin language for .feature files
+      vim.treesitter.language.register("gherkin", "cucumber")
       local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
       parser_config.gherkin = {
         install_info = {
@@ -11,17 +13,16 @@ return {
         },
         filetype = "feature",
       }
-      require("nvim-treesitter.configs").setup({
+
+      local gherkin_opts = {
         highlight = {
           enable = { "gherkin" },
 
           additional_vim_regex_highlighting = false,
         },
-      })
-    end,
-    opts = function(_, opts)
-      -- Register the Gherkin language for .feature files
-      vim.treesitter.language.register("gherkin", "cucumber")
+      }
+
+      opts = vim.tbl_deep_extend("force", opts, gherkin_opts)
 
       return opts
     end,
