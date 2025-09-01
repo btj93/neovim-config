@@ -1,5 +1,5 @@
 return {
-  "echasnovski/mini.indentscope",
+  "nvim-mini/mini.indentscope",
   keys = {
     -- https://www.reddit.com/r/neovim/comments/1i8eyyq/remove_outer_indentation_with_miniindentscope/
     {
