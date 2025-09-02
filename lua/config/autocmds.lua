@@ -39,6 +39,7 @@ local vimade_focus_active = false
 -- minifiles is handled specially
 local disable_vimade_filetypes = {
   "snacks_picker_input",
+  "fff_input",
 }
 
 autocmd({ "FileType" }, {
@@ -100,10 +101,8 @@ autocmd({ "BufLeave" }, {
   callback = function()
     for _, filetype in ipairs(disable_vimade_filetypes) do
       if vim.bo.filetype == filetype then
-        if vim.bo.filetype == "snacks_picker_input" then
-          if vimade_focus_active then
-            require("vimade.focus.api").toggle_on()
-          end
+        if vimade_focus_active then
+          require("vimade.focus.api").toggle_on()
         end
       end
     end
