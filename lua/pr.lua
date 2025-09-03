@@ -277,6 +277,11 @@ local function place_comments()
       virt_text = { { text, "PRComment" } },
       virt_text_pos = "eol",
     })
+    vim.api.nvim_buf_set_extmark(0, comments_ns_id, line - 1, -1, {
+      virt_lines = { { { text, "PRComment" } } },
+      virt_text_pos = "eol",
+    })
+
     comments_placed = comments_placed + 1
   end
 
