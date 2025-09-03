@@ -456,7 +456,6 @@ function M.draw(buf)
 
   M.get_comments()
   local comments = M.comments[relative_path] or {}
-  local comments_by_line = {}
   for _, thread in ipairs(comments) do
     local c = {}
     local start_line = 0
@@ -466,7 +465,7 @@ function M.draw(buf)
       start_line = comment.start_line or end_line
       local author = comment.author and comment.author.login or "unknown"
       local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-      vim.api.nvim_buf_set_extmark(0, comments_ns_id, start_line, -1, {
+      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
         end_line = end_line,
         end_col = 0,
         hl_group = hl_comment,
@@ -474,8 +473,8 @@ function M.draw(buf)
       table.insert(c, text)
     end
 
-    vim.fn.sign_place(0, sign_group, sign_comment, "%", { lnum = end_line })
-    vim.api.nvim_buf_set_extmark(0, comments_ns_id, end_line - 1, -1, {
+    vim.fn.sign_place(0, sign_group, sign_comment, buf, { lnum = end_line })
+    vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
       virt_text = { { table.concat(c, " | "), "PRComment" } },
       virt_text_pos = "eol",
     })
@@ -486,7 +485,7 @@ function M.draw(buf)
       local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
       table.insert(virt_lines, { { text, "PRComment" } })
     end
-    vim.api.nvim_buf_set_extmark(0, comments_ns_id, end_line - 1, -1, {
+    vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
       virt_lines = virt_lines,
       virt_text_pos = "eol",
     })
