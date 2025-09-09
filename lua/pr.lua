@@ -3,6 +3,7 @@ local M = {}
 M.enabled = false
 M.bufs = {}
 M.wins = {}
+M.git_root = ""
 
 -- { [file] = { { [author, body, start_line, end_line] } } }
 M.comments = {}
@@ -20,6 +21,7 @@ local hl_comment = "PRCommentHL"
 local Popup = require("nui.popup")
 local Layout = require("nui.layout")
 local event = require("nui.utils.autocmd").event
+local Job = require("plenary.job")
 
 local popup_one, popup_two =
   Popup({
@@ -72,9 +74,6 @@ end
 
 -- Run setup when the module is loaded
 setup_highlights_and_signs()
-
-local branch = vim.fn.systemlist("git rev-parse --abbrev-ref HEAD")[1]
-local pr_info_cmd = "gh pr view --json url --jq .url"
 
 -- State tracking
 local highlights_active = false
@@ -216,7 +215,7 @@ local function get_pr_number()
   return tonumber(pr_number_str)
 end
 
-function M.get_comments()
+function M.get_comments(callback)
   if next(M.comments) then
     return
   end
@@ -269,8 +268,7 @@ function M.get_comments()
   ]]
 
   -- 3. Execute the gh api graphql command safely
-  local command = {
-    "gh",
+  local args = {
     "api",
     "graphql",
     "-F",
@@ -282,50 +280,66 @@ function M.get_comments()
     "-f",
     "query=" .. query_template,
   }
-  local result_json = vim.fn.system(command)
+  Job:new({
+    command = "gh",
+    args = args,
+    on_exit = function(j, return_val)
+      if return_val ~= 0 then
+        vim.notify("Error running gh api graphql command. Is a gh cli installed?")
+        return
+      end
 
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({ { "GraphQL API call failed.", "ErrorMsg" } }, true, {})
-    return
-  end
+      local result_json = j:result()
+      local _, t = next(result_json)
+      if not t then
+        vim.notify("No result from gh api graphql command. Is a gh cli installed?")
+        return
+      end
 
-  -- 4. Decode and parse the deep JSON structure
-  local data = vim.fn.json_decode(result_json)
-  if not data or not data.data or not data.data.repository or not data.data.repository.pullRequest then
-    vim.api.nvim_echo({ { "Unexpected GraphQL response structure.", "WarningMsg" } }, true, {})
-    return
-  end
+      local data = vim.json.decode(t)
+      if not data or not data.data or not data.data.repository or not data.data.repository.pullRequest then
+        vim.notify("Unexpected GraphQL response structure.")
+        return
+      end
 
-  local threads = data.data.repository.pullRequest.reviewThreads.edges
+      local threads = data.data.repository.pullRequest.reviewThreads.edges
 
-  for _, thread_edge in ipairs(threads) do
-    local thread = {}
-    local file = ""
-    for _, comment_edge in ipairs(thread_edge.node.comments.edges) do
-      local comment = comment_edge.node
-      if comment.line ~= vim.NIL or comment.originalLine ~= vim.NIL then
-        local line = comment.line
-        if comment.line == vim.NIL then
-          line = comment.originalLine
-        end
+      local comments = {}
 
-        local start_line = comment.startLine
-        if comment.startLine == vim.NIL then
-          if comment.originalStartLine == vim.NIL then
-            start_line = line
-          else
-            start_line = comment.originalStartLine
+      for _, thread_edge in ipairs(threads) do
+        local thread = {}
+        local file = ""
+        for _, comment_edge in ipairs(thread_edge.node.comments.edges) do
+          local comment = comment_edge.node
+          if comment.line ~= vim.NIL or comment.originalLine ~= vim.NIL then
+            local line = comment.line
+            if comment.line == vim.NIL then
+              line = comment.originalLine
+            end
+
+            local start_line = comment.startLine
+            if comment.startLine == vim.NIL then
+              if comment.originalStartLine == vim.NIL then
+                start_line = line
+              else
+                start_line = comment.originalStartLine
+              end
+            end
+            file = comment.path
+            local author = comment.author and comment.author.login or "unknown"
+            table.insert(thread, { author, body = comment.body, start_line = start_line, end_line = line })
           end
         end
-        file = comment.path
-        local author = comment.author and comment.author.login or "unknown"
-        table.insert(thread, { author, body = comment.body, start_line = start_line, end_line = line })
+        local c = comments[file] or {}
+        table.insert(c, thread)
+        comments[file] = c
       end
-    end
-    local c = M.comments[file] or {}
-    table.insert(c, thread)
-    M.comments[file] = c
-  end
+
+      M.comments = comments
+
+      callback()
+    end,
+  }):start()
 end
 
 function M.draw(buf)
@@ -341,57 +355,58 @@ function M.draw(buf)
   end
 
   local comments_placed = 0
-  local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-  if git_root == nil or git_root == "" then
-    vim.api.nvim_echo({ { "Not a git repository.", "WarningMsg" } }, true, {})
-    return
-  end
-  local relative_path = buffer_path:sub(#git_root + 2)
-  local comments = M.comments[relative_path] or {}
-  for _, thread in ipairs(comments) do
-    local c = {}
-    local start_line = 0
-    local end_line = 0
-    for _, comment in ipairs(thread) do
-      end_line = comment.end_line
-      start_line = comment.start_line
-      local author = comment.author and comment.author.login or "unknown"
-      local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
-        end_line = end_line,
-        end_col = 0,
-        hl_group = hl_comment,
+  M.get_git_root(vim.schedule_wrap(function(git_root)
+    if git_root == nil or git_root == "" then
+      vim.api.nvim_echo({ { "Not a git repository.", "WarningMsg" } }, true, {})
+      return
+    end
+    local relative_path = buffer_path:sub(#git_root + 2)
+    local comments = M.comments[relative_path] or {}
+    for _, thread in ipairs(comments) do
+      local c = {}
+      local start_line = 0
+      local end_line = 0
+      for _, comment in ipairs(thread) do
+        end_line = comment.end_line
+        start_line = comment.start_line
+        local author = comment.author and comment.author.login or "unknown"
+        local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
+        vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
+          end_line = end_line,
+          end_col = 0,
+          hl_group = hl_comment,
+        })
+        table.insert(c, text)
+      end
+
+      vim.fn.sign_place(0, sign_group, sign_comment, buf, { lnum = end_line })
+      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
+        virt_text = { { table.concat(c, " | "), "PRComment" } },
+        virt_text_pos = "eol",
       })
-      table.insert(c, text)
+
+      local virt_lines = {}
+      for _, comment in ipairs(thread) do
+        local author = comment.author and comment.author.login or "unknown"
+        local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
+        table.insert(virt_lines, { { text, "PRComment" } })
+      end
+      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
+        virt_lines = virt_lines,
+        virt_text_pos = "eol",
+      })
+
+      comments_placed = comments_placed + 1
     end
 
-    vim.fn.sign_place(0, sign_group, sign_comment, buf, { lnum = end_line })
-    vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
-      virt_text = { { table.concat(c, " | "), "PRComment" } },
-      virt_text_pos = "eol",
-    })
+    M.bufs[buf] = true
 
-    local virt_lines = {}
-    for _, comment in ipairs(thread) do
-      local author = comment.author and comment.author.login or "unknown"
-      local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-      table.insert(virt_lines, { { text, "PRComment" } })
+    if comments_placed > 0 then
+      vim.api.nvim_echo({ { comments_placed .. " PR comment threads shown.", "InfoMsg" } }, true, {})
+    else
+      vim.api.nvim_echo({ { "No inline PR comments found for this file.", "WarningMsg" } }, true, {})
     end
-    vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
-      virt_lines = virt_lines,
-      virt_text_pos = "eol",
-    })
-
-    comments_placed = comments_placed + 1
-  end
-
-  M.bufs[buf] = true
-
-  if comments_placed > 0 then
-    vim.api.nvim_echo({ { comments_placed .. " PR comment threads shown.", "InfoMsg" } }, true, {})
-  else
-    vim.api.nvim_echo({ { "No inline PR comments found for this file.", "WarningMsg" } }, true, {})
-  end
+  end))
 end
 
 -- yoinked from https://github.com/folke/todo-comments.nvim/blob/304a8d204ee787d2544d8bc23cd38d2f929e7cc5/lua/todo-comments/highlight.lua#L279
@@ -433,6 +448,31 @@ function M.is_valid_buf(buf)
   --   return false
   -- end
   return true
+end
+
+function M.get_git_root(callback)
+  if M.git_root then
+    callback(M.git_root)
+  end
+  Job:new({
+    command = "git",
+    args = { "rev-parse", "--show-toplevel" },
+    on_exit = function(j, return_val)
+      if return_val ~= 0 then
+        vim.notify("Error running git rev-parse command. Is a git cli installed?")
+        return
+      end
+      local result_json = j:result()
+      local _, t = next(result_json)
+      if not t then
+        vim.notify("No result from git rev-parse command. Is a git cli installed?")
+        return
+      end
+
+      M.git_root = t
+      callback(M.git_root)
+    end,
+  }):start()
 end
 
 function M.attach(win)
@@ -514,27 +554,28 @@ function M.start()
     -- M.stop()
   end
   M.enabled = true
-  M.get_comments()
-  vim.api.nvim_exec(
-    [[augroup PRComment
+  M.get_comments(vim.schedule_wrap(function()
+    vim.api.nvim_exec2(
+      [[augroup PRComment
         autocmd!
         autocmd BufWinEnter,WinNew * lua require("pr").draw()
       augroup end]],
-    false
-  )
+      { output = false }
+    )
 
-  -- attach to all bufs in visible windows
-  for _, win in pairs(vim.api.nvim_list_wins()) do
-    if not M.wins[win] then
-      -- local buf = vim.api.nvim_win_get_buf(win)
-      -- if not M.bufs[buf] then
-      --   M.draw(buf)
-      --   M.wins[win] = true
-      --   M.bufs[buf] = true
-      -- end
-      M.attach(win)
+    -- attach to all bufs in visible windows
+    for _, win in pairs(vim.api.nvim_list_wins()) do
+      if not M.wins[win] then
+        -- local buf = vim.api.nvim_win_get_buf(win)
+        -- if not M.bufs[buf] then
+        --   M.draw(buf)
+        --   M.wins[win] = true
+        --   M.bufs[buf] = true
+        -- end
+        M.attach(win)
+      end
     end
-  end
+  end))
 end
 
 return M
