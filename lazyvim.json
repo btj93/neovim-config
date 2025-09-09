@@ -18,7 +18,6 @@
     "lazyvim.plugins.extras.test.core",
     "lazyvim.plugins.extras.ui.treesitter-context",
     "lazyvim.plugins.extras.util.mini-hipatterns",
-    "lazyvim.plugins.extras.util.octo",
     "lazyvim.plugins.extras.util.startuptime"
   ],
   "install_version": 7,

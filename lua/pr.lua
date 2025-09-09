@@ -216,135 +216,11 @@ local function get_pr_number()
   return tonumber(pr_number_str)
 end
 
-local function place_comments()
-  local buffer_path = vim.api.nvim_buf_get_name(0)
-  if buffer_path == "" then
-    return
-  end
-  local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-  if git_root == nil or git_root == "" then
-    return
-  end
-
-  -- 1. Get dynamic repository and PR info
-  local repo_info = get_repo_info()
-  if not repo_info then
-    vim.api.nvim_echo({ { "Could not determine GitHub repository from remote 'origin'.", "ErrorMsg" } }, true, {})
-    return
-  end
-  local pr_number = get_pr_number()
-  if not pr_number then
-    vim.api.nvim_echo({ { "Could not get PR number. Is a PR open for this branch?", "ErrorMsg" } }, true, {})
-    return
-  end
-
-  -- 2. Construct the GraphQL query with dynamic data
-  local query_template = [[
-    query($owner: String!, $name: String!, $prNumber: Int!) {
-      repository(owner: $owner, name: $name) {
-        pullRequest(number: $prNumber) {
-          reviewThreads(first: 100) {
-            edges {
-              node {
-                comments(first: 100) {
-                  edges {
-                    node {
-                      author { login }
-                      body
-                      path
-                      line
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  ]]
-
-  -- 3. Execute the gh api graphql command safely
-  local command = {
-    "gh",
-    "api",
-    "graphql",
-    "-F",
-    "owner=" .. repo_info.owner,
-    "-F",
-    "name=" .. repo_info.repo,
-    "-F",
-    "prNumber=" .. pr_number,
-    "-f",
-    "query=" .. query_template,
-  }
-  local result_json = vim.fn.system(command)
-
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({ { "GraphQL API call failed.", "ErrorMsg" } }, true, {})
-    return
-  end
-
-  -- 4. Decode and parse the deep JSON structure
-  local data = vim.fn.json_decode(result_json)
-  if not data or not data.data or not data.data.repository or not data.data.repository.pullRequest then
-    vim.api.nvim_echo({ { "Unexpected GraphQL response structure.", "WarningMsg" } }, true, {})
-    return
-  end
-
-  local threads = data.data.repository.pullRequest.reviewThreads.edges
-  local comments_by_line = {}
-  local comments_placed = 0
-  local relative_path = buffer_path:sub(#git_root + 2)
-
-  for _, thread_edge in ipairs(threads) do
-    for _, comment_edge in ipairs(thread_edge.node.comments.edges) do
-      local comment = comment_edge.node
-      if comment.path == relative_path and comment.line then
-        local line = comment.line
-        local start_line = comment.start_line or line
-        local author = comment.author and comment.author.login or "unknown"
-        local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-        vim.api.nvim_buf_set_extmark(0, comments_ns_id, start_line, -1, {
-          end_line = line,
-          end_col = 0,
-          hl_group = hl_comment,
-        })
-        if comments_by_line[line] then
-          comments_by_line[line] = comments_by_line[line] .. " | " .. text
-        else
-          comments_by_line[line] = text
-        end
-      end
-    end
-  end
-
-  -- 5. Place the comments as virtual text (unchanged logic)
-  for line, text in pairs(comments_by_line) do
-    vim.fn.sign_place(0, sign_group, sign_comment, "%", { lnum = line })
-    vim.api.nvim_buf_set_extmark(0, comments_ns_id, line - 1, -1, {
-      virt_text = { { text, "PRComment" } },
-      virt_text_pos = "eol",
-    })
-    vim.api.nvim_buf_set_extmark(0, comments_ns_id, line - 1, -1, {
-      virt_lines = { { { text, "PRComment" } } },
-      virt_text_pos = "eol",
-    })
-
-    comments_placed = comments_placed + 1
-  end
-
-  if comments_placed > 0 then
-    vim.api.nvim_echo({ { comments_placed .. " PR comment threads shown.", "InfoMsg" } }, true, {})
-  else
-    vim.api.nvim_echo({ { "No inline PR comments found for this file.", "WarningMsg" } }, true, {})
-  end
-end
-
 function M.get_comments()
-  if not M.comments == {} then
+  if next(M.comments) then
     return
   end
+  vim.notify(vim.inspect(M.comments))
 
   local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
   if git_root == nil or git_root == "" then
@@ -378,6 +254,9 @@ function M.get_comments()
                       body
                       path
                       line
+                      startLine
+                      originalLine
+                      originalStartLine
                     }
                   }
                 }
@@ -424,9 +303,20 @@ function M.get_comments()
     local file = ""
     for _, comment_edge in ipairs(thread_edge.node.comments.edges) do
       local comment = comment_edge.node
-      if comment.line then
+      if comment.line ~= vim.NIL or comment.originalLine ~= vim.NIL then
         local line = comment.line
-        local start_line = comment.start_line or line
+        if comment.line == vim.NIL then
+          line = comment.originalLine
+        end
+
+        local start_line = comment.startLine
+        if comment.startLine == vim.NIL then
+          if comment.originalStartLine == vim.NIL then
+            start_line = line
+          else
+            start_line = comment.originalStartLine
+          end
+        end
         file = comment.path
         local author = comment.author and comment.author.login or "unknown"
         table.insert(thread, { author, body = comment.body, start_line = start_line, end_line = line })
@@ -441,6 +331,10 @@ end
 function M.draw(buf)
   vim.notify("draw")
   local buf = buf or vim.api.nvim_get_current_buf()
+  if M.bufs[buf] then
+    return
+  end
+
   local buffer_path = vim.api.nvim_buf_get_name(buf)
   if buffer_path == "" then
     return
@@ -453,8 +347,6 @@ function M.draw(buf)
     return
   end
   local relative_path = buffer_path:sub(#git_root + 2)
-
-  M.get_comments()
   local comments = M.comments[relative_path] or {}
   for _, thread in ipairs(comments) do
     local c = {}
@@ -462,7 +354,7 @@ function M.draw(buf)
     local end_line = 0
     for _, comment in ipairs(thread) do
       end_line = comment.end_line
-      start_line = comment.start_line or end_line
+      start_line = comment.start_line
       local author = comment.author and comment.author.login or "unknown"
       local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
       vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
@@ -492,6 +384,8 @@ function M.draw(buf)
 
     comments_placed = comments_placed + 1
   end
+
+  M.bufs[buf] = true
 
   if comments_placed > 0 then
     vim.api.nvim_echo({ { comments_placed .. " PR comment threads shown.", "InfoMsg" } }, true, {})
@@ -547,6 +441,10 @@ function M.attach(win)
     return
   end
 
+  if M.wins[win] then
+    return
+  end
+
   local buf = vim.api.nvim_win_get_buf(win)
 
   if not M.bufs[buf] then
@@ -564,10 +462,11 @@ function M.attach(win)
         M.draw(buf)
       end,
       on_detach = function()
-        M.state[buf] = nil
         M.bufs[buf] = nil
       end,
     })
+
+    M.draw(buf)
 
     -- local highlighter = require("vim.treesitter.highlighter")
     -- local hl = highlighter.active[buf]
@@ -585,12 +484,12 @@ function M.attach(win)
     --   })
     -- end
 
-    M.bufs[buf] = true
+    -- M.bufs[buf] = true
     -- M.highlight_win(win)
     M.wins[win] = true
-  elseif not M.wins[win] then
+    -- elseif not M.wins[win] then
     -- M.highlight_win(win)
-    M.wins[win] = true
+    -- M.wins[win] = true
   end
 end
 -- ===========================================================================
@@ -598,7 +497,7 @@ end
 function M.toggle_comments()
   comments_active = not comments_active
   if comments_active then
-    place_comments()
+    -- place_comments()
     layout:mount()
     popup_one:on(event.BufLeave, function()
       popup_one:unmount()
@@ -615,6 +514,7 @@ function M.start()
     -- M.stop()
   end
   M.enabled = true
+  M.get_comments()
   vim.api.nvim_exec(
     [[augroup PRComment
         autocmd!
@@ -626,13 +526,13 @@ function M.start()
   -- attach to all bufs in visible windows
   for _, win in pairs(vim.api.nvim_list_wins()) do
     if not M.wins[win] then
-      local buf = vim.api.nvim_win_get_buf(win)
-      if not M.bufs[buf] then
-        M.draw(buf)
-        M.wins[win] = true
-        M.bufs[buf] = true
-      end
-      -- M.attach(win)
+      -- local buf = vim.api.nvim_win_get_buf(win)
+      -- if not M.bufs[buf] then
+      --   M.draw(buf)
+      --   M.wins[win] = true
+      --   M.bufs[buf] = true
+      -- end
+      M.attach(win)
     end
   end
 end
