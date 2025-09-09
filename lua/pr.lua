@@ -327,7 +327,7 @@ function M.get_comments(callback)
             end
             file = comment.path
             local author = comment.author and comment.author.login or "unknown"
-            table.insert(thread, { author, body = comment.body, start_line = start_line, end_line = line })
+            table.insert(thread, { author = author, body = comment.body, start_line = start_line, end_line = line })
           end
         end
         local c = comments[file] or {}
@@ -369,7 +369,7 @@ function M.draw(buf)
       for _, comment in ipairs(thread) do
         end_line = comment.end_line
         start_line = comment.start_line
-        local author = comment.author and comment.author.login or "unknown"
+        local author = comment.author
         local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
         vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
           end_line = end_line,
@@ -387,7 +387,7 @@ function M.draw(buf)
 
       local virt_lines = {}
       for _, comment in ipairs(thread) do
-        local author = comment.author and comment.author.login or "unknown"
+        local author = comment.author
         local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
         table.insert(virt_lines, { { text, "PRComment" } })
       end
@@ -481,10 +481,6 @@ function M.attach(win)
     return
   end
 
-  if M.wins[win] then
-    return
-  end
-
   local buf = vim.api.nvim_win_get_buf(win)
 
   if not M.bufs[buf] then
@@ -558,7 +554,7 @@ function M.start()
     vim.api.nvim_exec2(
       [[augroup PRComment
         autocmd!
-        autocmd BufWinEnter,WinNew * lua require("pr").draw()
+        autocmd BufWinEnter,WinNew * lua require("pr").attach()
       augroup end]],
       { output = false }
     )
