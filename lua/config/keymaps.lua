@@ -543,3 +543,7 @@ end, { desc = "toggle PR diff" })
 vim.keymap.set("n", "<leader>gc", function()
   require("pr"):start()
 end, { desc = "toggle PR comments" })
+
+vim.keymap.set("n", "<leader>gp", function()
+  require("pr").popup()
+end, { desc = "toggle PR comments" })

@@ -5,14 +5,42 @@ M.bufs = {}
 M.wins = {}
 M.git_root = ""
 
--- { [file] = { { [author, body, start_line, end_line] } } }
+-- { [file] = { { [author, body, start_line, end_line, reaction_groups] } } }
 M.comments = {}
+
+M.opts = {
+  virtual_text = true,
+  virtual_line = true,
+  sign = "󰅺",
+  multi_line_sign = {
+    start_line = "┌",
+    connector = "│",
+    end_line = "└",
+  },
+}
+
+local reaction_contents = {
+  CONFUSED = "😕",
+  EYES = "👀",
+  HEART = "❤️",
+  HOORAY = "🎉",
+  LAUGH = "😄",
+  ROCKET = "🚀",
+  THUMBS_DOWN = "👎",
+  THUMBS_UP = "👍",
+}
 
 -- Sign definitions
 local sign_group = "PRDiffSigns"
 -- local sign_add = "PRAdd"
 -- local sign_del = "PRDel"
 local sign_comment = "PRComment"
+local sign_comment_multi_line_start = "PRCommentMultiLineStart"
+local sign_comment_multi_line_connector = "PRCommentMultiLineConnector"
+local sign_comment_multi_line_end = "PRCommentMultiLineEnd"
+
+local sign_hl = "DiffComment"
+local popup_hl = "PRCommentPopup"
 
 -- Highlight definitions
 local hl_group = "PRDiffHighlights"
@@ -36,10 +64,15 @@ local popup_one, popup_two =
       text = {
         top = "Inline Comment",
         top_align = "center",
-        -- bottom = "I am bottom title",
-        -- bottom_align = "left",
+        bottom = " [E]moji | [C]omment | [R]esolve | [Q]uit ",
+        bottom_align = "center",
       },
     },
+    buf_options = {
+      modifiable = true,
+      readonly = false,
+    },
+    enter = true,
   }), Popup({
     border = "double",
   })
@@ -59,21 +92,28 @@ local layout = Layout(
 )
 
 -- A single setup function for signs and highlights
-local function setup_highlights_and_signs()
+function M.setup(opts)
+  M.opts = vim.tbl_deep_extend("force", M.opts, opts or {})
+
   -- vim.fn.sign_define(sign_add, { text = "+", texthl = "DiffAdd" })
   -- vim.fn.sign_define(sign_del, { text = "-", texthl = "DiffDelete" })
-  vim.fn.sign_define(sign_comment, { text = "󰅺", texthl = "DiffComment" })
+  vim.fn.sign_define(sign_comment, { text = M.opts.sign, texthl = sign_hl })
+  vim.fn.sign_define(sign_comment_multi_line_start, { text = M.opts.multi_line_sign.start_line, texthl = sign_hl })
+  vim.fn.sign_define(sign_comment_multi_line_connector, { text = M.opts.multi_line_sign.connector, texthl = sign_hl })
+  vim.fn.sign_define(sign_comment_multi_line_end, { text = M.opts.multi_line_sign.end_line, texthl = sign_hl })
   -- vim.api.nvim_set_hl(0, "DiffAdd", { fg = "Green" })
   -- vim.api.nvim_set_hl(0, "DiffDelete", { fg = "Red" })
-  vim.api.nvim_set_hl(0, "DiffComment", { fg = "LightBlue" })
+  vim.api.nvim_set_hl(0, sign_hl, { fg = "LightBlue" })
   vim.api.nvim_set_hl(0, "PRDiffAdd", { bg = "#40531b" })
   vim.api.nvim_set_hl(0, "PRDiffDelete", { bg = "#893f45" })
-  vim.api.nvim_set_hl(0, "PRComment", { fg = "Grey", italic = true })
+  vim.api.nvim_set_hl(0, sign_comment, { fg = "Grey", italic = true })
   vim.api.nvim_set_hl(0, hl_comment, { bg = "LightBlue" })
+
+  vim.api.nvim_set_hl(0, popup_hl, { fg = "Yellow" })
 end
 
 -- Run setup when the module is loaded
-setup_highlights_and_signs()
+M.setup()
 
 -- State tracking
 local highlights_active = false
@@ -239,6 +279,7 @@ function M.get_comments(callback)
   end
 
   -- 2. Construct the GraphQL query with dynamic data
+  -- https://docs.github.com/en/graphql/reference/objects#pullrequestreviewcomment
   local query_template = [[
     query($owner: String!, $name: String!, $prNumber: Int!) {
       repository(owner: $owner, name: $name) {
@@ -256,6 +297,13 @@ function M.get_comments(callback)
                       startLine
                       originalLine
                       originalStartLine
+                      reactionGroups {
+                        content
+                        viewerHasReacted
+                        reactors {
+                          totalCount
+                        }
+                      }
                     }
                   }
                 }
@@ -311,6 +359,7 @@ function M.get_comments(callback)
         local file = ""
         for _, comment_edge in ipairs(thread_edge.node.comments.edges) do
           local comment = comment_edge.node
+          vim.notify(vim.inspect(comment))
           if comment.line ~= vim.NIL or comment.originalLine ~= vim.NIL then
             local line = comment.line
             if comment.line == vim.NIL then
@@ -327,7 +376,13 @@ function M.get_comments(callback)
             end
             file = comment.path
             local author = comment.author and comment.author.login or "unknown"
-            table.insert(thread, { author = author, body = comment.body, start_line = start_line, end_line = line })
+            table.insert(thread, {
+              author = author,
+              body = comment.body,
+              start_line = start_line,
+              end_line = line,
+              reaction_groups = comment.reactionGroups,
+            })
           end
         end
         local c = comments[file] or {}
@@ -360,6 +415,7 @@ function M.draw(buf)
       vim.api.nvim_echo({ { "Not a git repository.", "WarningMsg" } }, true, {})
       return
     end
+
     local relative_path = buffer_path:sub(#git_root + 2)
     local comments = M.comments[relative_path] or {}
     for _, thread in ipairs(comments) do
@@ -371,30 +427,43 @@ function M.draw(buf)
         start_line = comment.start_line
         local author = comment.author
         local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-        vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
-          end_line = end_line,
-          end_col = 0,
-          hl_group = hl_comment,
-        })
+        -- vim.api.nvim_buf_set_extmark(buf, comments_ns_id, start_line, -1, {
+        --   end_line = end_line,
+        --   end_col = 0,
+        --   hl_group = hl_comment,
+        -- })
         table.insert(c, text)
       end
 
-      vim.fn.sign_place(0, sign_group, sign_comment, buf, { lnum = end_line })
-      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
-        virt_text = { { table.concat(c, " | "), "PRComment" } },
-        virt_text_pos = "eol",
-      })
-
-      local virt_lines = {}
-      for _, comment in ipairs(thread) do
-        local author = comment.author
-        local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
-        table.insert(virt_lines, { { text, "PRComment" } })
+      if start_line == end_line then
+        vim.fn.sign_place(0, sign_group, sign_comment, buf, { lnum = end_line })
+      else
+        vim.fn.sign_place(0, sign_group, sign_comment_multi_line_start, buf, { lnum = start_line })
+        for i = start_line + 1, end_line - 1 do
+          vim.fn.sign_place(0, sign_group, sign_comment_multi_line_connector, buf, { lnum = i })
+        end
+        vim.fn.sign_place(0, sign_group, sign_comment_multi_line_end, buf, { lnum = end_line })
       end
-      vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
-        virt_lines = virt_lines,
-        virt_text_pos = "eol",
-      })
+
+      if M.opts.virtual_text then
+        vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
+          virt_text = { { table.concat(c, " | "), "PRComment" } },
+          virt_text_pos = "eol",
+        })
+      end
+
+      if M.opts.virtual_line then
+        local virt_lines = {}
+        for _, comment in ipairs(thread) do
+          local author = comment.author
+          local text = "🗨️ " .. author .. ": " .. comment.body:gsub("\r\n", " "):gsub("\n", " ")
+          table.insert(virt_lines, { { text, "PRComment" } })
+        end
+        vim.api.nvim_buf_set_extmark(buf, comments_ns_id, end_line - 1, -1, {
+          virt_lines = virt_lines,
+          virt_text_pos = "eol",
+        })
+      end
 
       comments_placed = comments_placed + 1
     end
@@ -473,6 +542,94 @@ function M.get_git_root(callback)
       callback(M.git_root)
     end,
   }):start()
+end
+
+function M.popup(relative_path, line)
+  -- TODO: check M.get_comments is done
+  M.get_git_root(vim.schedule_wrap(function(git_root)
+    if git_root == nil or git_root == "" then
+      vim.api.nvim_echo({ { "Not a git repository.", "WarningMsg" } }, true, {})
+      return
+    end
+
+    local buf = vim.api.nvim_get_current_buf()
+    local buffer_path = vim.api.nvim_buf_get_name(buf)
+    if buffer_path == "" then
+      return
+    end
+    relative_path = relative_path or buffer_path:sub(#git_root + 2)
+    local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
+    line = line or row
+
+    local comments = M.comments[relative_path] or {}
+
+    for _, thread in ipairs(comments) do
+      local _, first_comment = next(thread)
+      if first_comment and first_comment.start_line <= line and first_comment.end_line >= line then
+        layout:mount()
+        popup_one:map("n", "q", function()
+          layout:unmount()
+        end)
+
+        popup_one:on(event.BufWinEnter, function()
+          -- FIXME:
+          popup_one.border:set_highlight(popup_hl)
+        end)
+        -- popup_one:on(event.BufLeave, function()
+        --   popup_one:unmount()
+        -- end)
+        local lines = { first_comment.author .. ":", unpack(M.split_crlf(first_comment.body)) }
+
+        table.insert(lines, "")
+        table.insert(lines, M.format_reaction(first_comment.reaction_groups))
+
+        vim.api.nvim_buf_set_lines(popup_one.bufnr, 0, 1, false, lines)
+
+        -- vim.keymap.set("n", "q", function()
+        --   popup_one:unmount()
+        -- end, { buffer = popup_one.bufnr })
+
+        -- vim.api.nvim_set_current_win(popup_one.winid)
+        break
+      end
+    end
+  end))
+end
+
+function M.format_reaction(reaction_group)
+  local reactions = {}
+  for _, reaction in ipairs(reaction_group) do
+    if reaction.reactors.totalCount > 0 then
+      table.insert(
+        reactions,
+        "( " .. reaction_contents[reaction.content] .. " " .. reaction.reactors.totalCount .. " )"
+      )
+    end
+  end
+  return table.concat(reactions, " | ")
+end
+
+function M.split_crlf(s)
+  local res = {}
+  local delim = "\r\n"
+  local i = 1
+
+  -- special-case empty string -> one empty field
+  if s == "" then
+    return { "" }
+  end
+
+  while true do
+    local start_pos, end_pos = string.find(s, delim, i, true) -- plain find
+    if not start_pos then
+      table.insert(res, string.sub(s, i)) -- remainder (may be "")
+      break
+    end
+    table.insert(res, string.sub(s, i, start_pos - 1)) -- segment before delim (may be "")
+    i = end_pos + 1 -- move past the delimiter
+  end
+
+  return res
 end
 
 function M.attach(win)

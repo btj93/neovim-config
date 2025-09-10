@@ -5,4 +5,7 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "MunifTanjim/nui.nvim",
   },
+  opts = {
+    auto = true,
+  },
 }
