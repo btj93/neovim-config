@@ -51,46 +51,6 @@ local Layout = require("nui.layout")
 local event = require("nui.utils.autocmd").event
 local Job = require("plenary.job")
 
-local popup_one, popup_two =
-  Popup({
-    border = {
-      padding = {
-        top = 1,
-        bottom = 1,
-        left = 1,
-        right = 1,
-      },
-      style = "rounded",
-      text = {
-        top = "Inline Comment",
-        top_align = "center",
-        bottom = " [E]moji | [C]omment | [R]esolve | [Q]uit ",
-        bottom_align = "center",
-      },
-    },
-    buf_options = {
-      modifiable = true,
-      readonly = false,
-    },
-    enter = true,
-  }), Popup({
-    border = "double",
-  })
-
-local layout = Layout(
-  {
-    position = "50%",
-    size = {
-      width = 80,
-      height = "60%",
-    },
-  },
-  Layout.Box({
-    Layout.Box(popup_one, { size = "40%" }),
-    Layout.Box(popup_two, { size = "60%" }),
-  }, { dir = "col" })
-)
-
 -- A single setup function for signs and highlights
 function M.setup(opts)
   M.opts = vim.tbl_deep_extend("force", M.opts, opts or {})
@@ -566,34 +526,119 @@ function M.popup(relative_path, line)
     for _, thread in ipairs(comments) do
       local _, first_comment = next(thread)
       if first_comment and first_comment.start_line <= line and first_comment.end_line >= line then
+        local popups = {}
+        for _, comment in ipairs(thread) do
+          table.insert(popups, M.make_popup(comment))
+        end
+        local layout = M.make_layout(popups)
         layout:mount()
-        popup_one:map("n", "q", function()
-          layout:unmount()
-        end)
-
-        popup_one:on(event.BufWinEnter, function()
-          -- FIXME:
-          popup_one.border:set_highlight(popup_hl)
-        end)
-        -- popup_one:on(event.BufLeave, function()
-        --   popup_one:unmount()
-        -- end)
-        local lines = { first_comment.author .. ":", unpack(M.split_crlf(first_comment.body)) }
-
-        table.insert(lines, "")
-        table.insert(lines, M.format_reaction(first_comment.reaction_groups))
-
-        vim.api.nvim_buf_set_lines(popup_one.bufnr, 0, 1, false, lines)
-
-        -- vim.keymap.set("n", "q", function()
-        --   popup_one:unmount()
-        -- end, { buffer = popup_one.bufnr })
-
-        -- vim.api.nvim_set_current_win(popup_one.winid)
         break
       end
     end
   end))
+end
+
+function M.make_popup(comment)
+  local popup = Popup({
+    border = {
+      padding = {
+        top = 1,
+        bottom = 1,
+        left = 1,
+        right = 1,
+      },
+      style = "rounded",
+      text = {},
+    },
+    buf_options = {
+      modifiable = true,
+      readonly = false,
+    },
+    win_options = {
+      winhighlight = "Normal:Normal,FloatBorder:FloatBorder",
+    },
+    enter = true,
+  })
+
+  popup:on(event.BufEnter, function()
+    popup.border:set_highlight(popup_hl)
+  end)
+  popup:on(event.BufLeave, function()
+    popup.border:set_highlight("FloatBorder")
+  end)
+  local lines = { comment.author .. ":", unpack(M.split_crlf(comment.body)) }
+
+  table.insert(lines, "")
+  table.insert(lines, M.format_reaction(comment.reaction_groups))
+
+  vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, lines)
+
+  -- vim.keymap.set("n", "q", function()
+  --   popup:unmount()
+  -- end, { buffer = popup.bufnr })
+
+  -- vim.api.nvim_set_current_win(popup.winid)
+  return popup
+end
+
+function M.make_layout(popups)
+  local comment_boxes = {}
+  for i, popup in ipairs(popups) do
+    local lines = vim.api.nvim_buf_get_lines(popup.bufnr, 0, -1, true)
+    -- padding
+    table.insert(comment_boxes, Layout.Box(popup, { size = #lines + 4 }))
+    if i == 1 then
+      popup.border:set_text("top", "Inline Comment", "center")
+    end
+
+    if i == #popups then
+      popup.border:set_text("bottom", " [E]moji | [C]omment | [R]esolve | [Q]uit ", "center")
+    end
+  end
+  local new_comment_popup = Popup({
+    border = {
+      padding = {
+        top = 1,
+        bottom = 1,
+        left = 1,
+        right = 1,
+      },
+      style = "rounded",
+      text = {},
+    },
+    buf_options = {
+      modifiable = true,
+      readonly = false,
+    },
+    enter = true,
+  })
+
+  new_comment_popup:on(event.BufEnter, function()
+    new_comment_popup.border:set_highlight(popup_hl)
+  end)
+  new_comment_popup:on(event.BufLeave, function()
+    new_comment_popup.border:set_highlight("FloatBorder")
+  end)
+
+  local new_comment_box = Layout.Box(new_comment_popup, { size = "40%" })
+
+  table.insert(comment_boxes, new_comment_box)
+
+  local layout = Layout({
+    position = "50%",
+    size = {
+      width = 80,
+      height = "60%",
+    },
+  }, Layout.Box(comment_boxes, { dir = "col" }))
+
+  for _, popup in ipairs(popups) do
+    popup:map("n", "q", function()
+      layout:unmount()
+    end)
+  end
+
+  return layout
 end
 
 function M.format_reaction(reaction_group)
@@ -701,11 +746,27 @@ function M.toggle_comments()
   end
 end
 
-function M.start()
-  if M.enabled then
-    M.enabled = false
-    -- M.stop()
+function M.stop()
+  M.enabled = false
+  M.wins = {}
+  M.comments = {}
+  for buf, _ in pairs(M.bufs) do
+    vim.api.nvim_buf_clear_namespace(buf, diff_ns_id, 0, -1)
+    vim.api.nvim_buf_clear_namespace(buf, comments_ns_id, 0, -1)
   end
+  M.bufs = {}
+  vim.fn.sign_unplace(sign_group)
+end
+
+function M.toggle()
+  if M.enabled then
+    M.stop()
+  else
+    M.start()
+  end
+end
+
+function M.start()
   M.enabled = true
   M.get_comments(vim.schedule_wrap(function()
     vim.api.nvim_exec2(
