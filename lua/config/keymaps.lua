@@ -532,18 +532,18 @@ end
 
 vim.keymap.set("n", "<leader>gk", struct_to_json, { desc = "JSON boilerplate" })
 
-vim.keymap.set("n", "<leader>gj", function()
-  require("pr").check_pr()
-end, { desc = "Check PR" })
-
-vim.keymap.set("n", "<leader>gJ", function()
-  require("pr").toggle_diff()
-end, { desc = "toggle PR diff" })
-
-vim.keymap.set("n", "<leader>gc", function()
-  require("pr"):toggle()
-end, { desc = "toggle PR comments" })
-
-vim.keymap.set("n", "<leader>gp", function()
-  require("pr").popup()
-end, { desc = "toggle PR comments" })
+-- vim.keymap.set("n", "<leader>gj", function()
+--   require("pr").check_pr()
+-- end, { desc = "Check PR" })
+--
+-- vim.keymap.set("n", "<leader>gJ", function()
+--   require("pr").toggle_diff()
+-- end, { desc = "toggle PR diff" })
+--
+-- vim.keymap.set("n", "<leader>gc", function()
+--   require("pr"):toggle()
+-- end, { desc = "toggle PR comments" })
+--
+-- vim.keymap.set("n", "<leader>gp", function()
+--   require("pr").popup()
+-- end, { desc = "toggle PR comments" })
