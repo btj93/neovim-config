@@ -24,9 +24,28 @@ return {
     {
       "<leader>fg",
       function()
-        require("pr").picker()
+        require("pr.picker").picker()
       end,
       { desc = "Check PR" },
+    },
+    {
+      "]c",
+      function()
+        require("pr").cycle_comments_in_buffer("forward")
+      end,
+    },
+    {
+      "[c",
+      function()
+        require("pr").cycle_comments_in_buffer("backward")
+      end,
+    },
+    {
+      "<leader>c",
+      function()
+        require("pr").comment()
+      end,
+      mode = "v",
     },
   },
   dev = true,

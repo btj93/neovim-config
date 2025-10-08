@@ -7,6 +7,7 @@ return {
     title = "Freakin Fast Fuzzy File Finder",
     max_threads = 8,
     max_results = 50,
+    lazy_sync = false,
     debug = {
       enabled = true, -- we expect your collaboration at least during the beta
       show_scores = true, -- to help us optimize the scoring system, feel free to share your scores!
