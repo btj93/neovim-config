@@ -11,7 +11,7 @@
   "colorful-menu.nvim": { "branch": "master", "commit": "d5b97d247528be308b6b69d96b5950a30e470f3d" },
   "conform.nvim": { "branch": "master", "commit": "fbcb4fa7f34bfea9be702ffff481a8e336ebf6ed" },
   "crates.nvim": { "branch": "main", "commit": "ac9fa498a9edb96dc3056724ff69d5f40b898453" },
-  "cronex.nvim": { "branch": "main", "commit": "738bc6ff4dfec2bb9fe075c613217c69e57bb1a7" },
+  "cronex.nvim": { "branch": "main", "commit": "c016902e5b01742bb4df7a963197342127a3997e" },
   "csvview.nvim": { "branch": "main", "commit": "bbab4c2f808fd8e11ec8dfdd128251aadba566a1" },
   "d2-vim": { "branch": "master", "commit": "cb3eb7fcb1a2d45c4304bf2e91077d787b724a39" },
   "debugmaster.nvim": { "branch": "main", "commit": "3d144b98c2c23f39123fbf5f10fdff7d6480a0e6" },
