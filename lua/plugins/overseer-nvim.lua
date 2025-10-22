@@ -18,16 +18,6 @@ return {
   "stevearc/overseer.nvim",
   config = true,
   opts = {
-    strategy = {
-      "toggleterm",
-      direction = "vertical",
-      size = 50,
-      close_on_exit = false,
-      quit_on_exit = "never",
-      on_create = function()
-        vim.cmd("stopinsert!")
-      end,
-    },
     templates = { "builtin", "go", "d2" },
     task_list = {
       bindings = {

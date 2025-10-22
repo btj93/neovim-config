@@ -22,11 +22,30 @@ return {
       { desc = "Show comment thread in floating window" },
     },
     {
+      "<leader>fh",
+      function()
+        require("pr.pickers").pick_hunks()
+      end,
+      { desc = "Pick PR hunks" },
+    },
+    {
       "<leader>fg",
       function()
-        require("pr.picker").picker()
+        require("pr.pickers").pick_comments()
       end,
-      { desc = "Check PR" },
+      { desc = "Pick PR comments" },
+    },
+    {
+      "]ph",
+      function()
+        require("pr").cycle_hunks_in_buffer("forward")
+      end,
+    },
+    {
+      "[ph",
+      function()
+        require("pr").cycle_hunks_in_buffer("backward")
+      end,
     },
     {
       "]c",
@@ -41,7 +60,7 @@ return {
       end,
     },
     {
-      "<leader>c",
+      "<leader>nc",
       function()
         require("pr").comment()
       end,
