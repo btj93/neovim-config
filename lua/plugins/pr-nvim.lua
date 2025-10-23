@@ -8,9 +8,16 @@ return {
   event = "VeryLazy",
   keys = {
     {
-      "<leader>gc",
+      "<leader>uh",
       function()
-        require("pr").toggle()
+        require("pr").toggle_hunks()
+      end,
+      { desc = "toggle PR comments" },
+    },
+    {
+      "<leader>uc",
+      function()
+        require("pr").toggle_comments()
       end,
       { desc = "toggle PR comments" },
     },
@@ -24,14 +31,14 @@ return {
     {
       "<leader>fh",
       function()
-        require("pr.pickers").pick_hunks()
+        require("pr.picker").pick_hunks()
       end,
       { desc = "Pick PR hunks" },
     },
     {
       "<leader>fg",
       function()
-        require("pr.pickers").pick_comments()
+        require("pr.picker").pick_comments()
       end,
       { desc = "Pick PR comments" },
     },
