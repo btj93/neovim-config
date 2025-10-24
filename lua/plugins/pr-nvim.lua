@@ -12,7 +12,7 @@ return {
       function()
         require("pr").toggle_hunks()
       end,
-      { desc = "toggle PR comments" },
+      { desc = "toggle PR hunks" },
     },
     {
       "<leader>uc",
