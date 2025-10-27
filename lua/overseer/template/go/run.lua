@@ -7,8 +7,7 @@ return {
     -- This must return an overseer.TaskDefinition
     return {
       -- cmd is the only required field
-      cmd = { "air" },
-      args = { "--build.cmd", '"go build -o bin/api cmd/main.go"', "--build.bin", '"./bin/api"' },
+      cmd = 'air --build.cmd "go build -o ./bin/api ./cmd/main.go" --build.bin ./bin/api',
       -- additional environment variables
       env = env_vars,
       cwd = cwd,

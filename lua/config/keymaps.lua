@@ -156,6 +156,7 @@ vim.keymap.set("i", "<C-p>", "<Up>", { noremap = true })
 vim.keymap.set("i", "<C-b>", "<Left>", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<Right>", { noremap = true })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { noremap = true })
+vim.keymap.set("i", "<C-a>", "<C-o>_", { noremap = true })
 
 -- Larger movement in insert mode
 vim.keymap.set("i", "<M-f>", "<C-o>w", { noremap = true })
