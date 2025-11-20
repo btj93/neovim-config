@@ -57,72 +57,72 @@ vim.keymap.set("v", "yc", duplicate_and_comment, { noremap = true, desc = "Dupli
 
 -- From the Vim wiki: https://bit.ly/4eLAARp
 -- Search and replace word under cursor
-vim.keymap.set(
-  "n",
-  "<Leader>r",
-  [[:%s/\<<C-r><C-w>\>//g<Left><Left>]],
-  { desc = "Search and replace word under cursor" }
-)
+-- vim.keymap.set(
+--   "n",
+--   "<Leader>r",
+--   [[:%s/\<<C-r><C-w>\>//g<Left><Left>]],
+--   { desc = "Search and replace word under cursor" }
+-- )
 -- In visual mode, replace selected word
-vim.keymap.set("v", "<leader>r", function()
-  local start_pos = vim.fn.getpos("v")
-  local end_pos = vim.fn.getpos(".")
-
-  local line = vim.fn.getline(start_pos[2])
-  local word = vim.trim(string.sub(line, start_pos[3], end_pos[3]))
-
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { word })
-
-  local width = vim.api.nvim_win_get_width(0)
-  local height = vim.api.nvim_win_get_height(0)
-
-  local win_opts = {
-    title = "Search and replace",
-    relative = "editor",
-    width = math.ceil(width * 0.4),
-    height = math.ceil(height * 0.05),
-    col = math.ceil((width - width * 0.4) / 2),
-    row = math.ceil((height - height * 0.05) / 2),
-    style = "minimal",
-    border = "rounded",
-  }
-
-  Abort = false
-
-  vim.keymap.set("n", "q", function()
-    Abort = true
-    vim.api.nvim_win_close(0, true)
-  end, { noremap = true, buffer = bufnr })
-
-  vim.keymap.set("n", "<Esc>", function()
-    Abort = true
-    vim.api.nvim_win_close(0, true)
-  end, { noremap = true, buffer = bufnr })
-
-  vim.keymap.set({ "n", "i" }, "<CR>", function()
-    vim.api.nvim_win_close(0, true)
-  end, { noremap = true, buffer = bufnr })
-
-  vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
-    buffer = bufnr,
-    callback = function()
-      if Abort then
-        return
-      end
-      local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-      local new_word = vim.trim(lines[1])
-      if new_word == word then
-        return
-      end
-      vim.schedule(function()
-        vim.cmd("%s/" .. word .. "/" .. new_word .. "/gc")
-      end)
-    end,
-  })
-
-  vim.api.nvim_open_win(bufnr, true, win_opts)
-end, { noremap = true })
+-- vim.keymap.set("v", "<leader>r", function()
+--   local start_pos = vim.fn.getpos("v")
+--   local end_pos = vim.fn.getpos(".")
+--
+--   local line = vim.fn.getline(start_pos[2])
+--   local word = vim.trim(string.sub(line, start_pos[3], end_pos[3]))
+--
+--   local bufnr = vim.api.nvim_create_buf(false, true)
+--   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { word })
+--
+--   local width = vim.api.nvim_win_get_width(0)
+--   local height = vim.api.nvim_win_get_height(0)
+--
+--   local win_opts = {
+--     title = "Search and replace",
+--     relative = "editor",
+--     width = math.ceil(width * 0.4),
+--     height = math.ceil(height * 0.05),
+--     col = math.ceil((width - width * 0.4) / 2),
+--     row = math.ceil((height - height * 0.05) / 2),
+--     style = "minimal",
+--     border = "rounded",
+--   }
+--
+--   Abort = false
+--
+--   vim.keymap.set("n", "q", function()
+--     Abort = true
+--     vim.api.nvim_win_close(0, true)
+--   end, { noremap = true, buffer = bufnr })
+--
+--   vim.keymap.set("n", "<Esc>", function()
+--     Abort = true
+--     vim.api.nvim_win_close(0, true)
+--   end, { noremap = true, buffer = bufnr })
+--
+--   vim.keymap.set({ "n", "i" }, "<CR>", function()
+--     vim.api.nvim_win_close(0, true)
+--   end, { noremap = true, buffer = bufnr })
+--
+--   vim.api.nvim_create_autocmd({ "BufWinLeave" }, {
+--     buffer = bufnr,
+--     callback = function()
+--       if Abort then
+--         return
+--       end
+--       local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+--       local new_word = vim.trim(lines[1])
+--       if new_word == word then
+--         return
+--       end
+--       vim.schedule(function()
+--         vim.cmd("%s/" .. word .. "/" .. new_word .. "/gc")
+--       end)
+--     end,
+--   })
+--
+--   vim.api.nvim_open_win(bufnr, true, win_opts)
+-- end, { noremap = true })
 
 vim.keymap.set({ "n" }, "<leader>v", "vg_", { noremap = true, desc = "Select to last non-blank character" })
 
@@ -156,7 +156,7 @@ vim.keymap.set("i", "<C-p>", "<Up>", { noremap = true })
 vim.keymap.set("i", "<C-b>", "<Left>", { noremap = true })
 vim.keymap.set("i", "<C-f>", "<Right>", { noremap = true })
 vim.keymap.set("i", "<C-e>", "<C-o>$", { noremap = true })
-vim.keymap.set("i", "<C-a>", "<C-o>_", { noremap = true })
+vim.keymap.set("i", "<C-a>", "<C-o>_", { noremap = false })
 
 -- Larger movement in insert mode
 vim.keymap.set("i", "<M-f>", "<C-o>w", { noremap = true })

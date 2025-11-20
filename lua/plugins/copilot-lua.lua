@@ -13,17 +13,6 @@ return {
       panel = {
         enabled = false,
         auto_refresh = false,
-        keymap = {
-          jump_prev = "[[",
-          jump_next = "]]",
-          accept = "<CR>",
-          refresh = "gr",
-          open = "<M-CR>",
-        },
-        layout = {
-          position = "bottom", -- | top | left | right | bottom |
-          ratio = 0.4,
-        },
       },
       suggestion = {
         enabled = true,

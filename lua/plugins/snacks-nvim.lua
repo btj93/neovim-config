@@ -8,6 +8,7 @@ return {
       exclude = { -- add folder names here to exclude
         ".git",
         "node_modules",
+        "coverage.out",
       },
       sources = {
         files = { hidden = true, ignored = true },
