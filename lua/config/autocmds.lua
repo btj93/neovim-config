@@ -361,3 +361,25 @@ end
 
 -- if you only want these mappings for toggle term use term://*toggleterm#* instead
 vim.cmd("autocmd! TermOpen term://*toggleterm#* lua set_terminal_keymaps()")
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "MiniFilesBufferCreate",
+  callback = function(args)
+    local buf_id = args.data.buf_id
+    local open_in_window_picker = function()
+      local fs_entry = MiniFiles.get_fs_entry()
+      if fs_entry ~= nil and fs_entry.fs_type == "file" then
+        local picked_window_id = require("window-picker").pick_window()
+        if not picked_window_id then
+          return
+        end
+
+        MiniFiles.set_target_window(picked_window_id)
+      end
+      MiniFiles.go_in({
+        close_on_file = true,
+      })
+    end
+    vim.keymap.set("n", "<c-w>", open_in_window_picker, { buffer = buf_id, desc = "Open in target window" })
+  end,
+})
