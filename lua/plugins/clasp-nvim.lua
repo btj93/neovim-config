@@ -1,5 +1,6 @@
 return {
   "xzbdmw/clasp.nvim",
+  enabled = false,
   opts = {
     pairs = { ["{"] = "}", ['"'] = '"', ["'"] = "'", ["("] = ")", ["["] = "]", ["<"] = ">" },
     -- If called from insert mode, do not return to normal mode.
