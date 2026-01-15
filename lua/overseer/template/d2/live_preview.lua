@@ -8,7 +8,7 @@ return {
     return {
       -- cmd is the only required field
       cmd = { "d2" },
-      args = { "fmt", buf_path, "&&", "d2", "--watch", buf_path, buf_path .. ".svg" },
+      args = { "fmt", buf_path, "&&", "d2", "--watch", buf_path, buf_path:sub(1, -4) .. ".svg" },
       -- additional environment variables
       env = {},
       cwd = cwd,

@@ -25,12 +25,6 @@ return {
         and vim.bo.filetype ~= "dropbar_menu_fzf"
         and vim.bo.filetype ~= "minifiles"
     end,
-    sources = {
-      default = { "ecolog" },
-      providers = {
-        ecolog = { name = "ecolog", module = "ecolog.integrations.cmp.blink_cmp" },
-      },
-    },
     completion = {
       trigger = {
         show_on_insert_on_trigger_character = false,
