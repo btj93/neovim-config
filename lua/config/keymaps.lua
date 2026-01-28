@@ -170,11 +170,21 @@ vim.keymap.set("n", "g/", ":vimgrep /<C-R>//j %<CR>|:cw<CR>", { noremap = true, 
 -- minify lines
 vim.keymap.set("v", "<leader>j", "J", { noremap = true })
 
+local default_virutal_text = {
+  prefix = "●",
+  source = "if_many",
+  spacing = 4,
+}
+
 -- Toggle diagnostic virtual lines and virtual text
 vim.keymap.set("n", "<leader>ud", function()
+  local virtual_text = false
+  if vim.diagnostic.config().virtual_text == false then
+    virtual_text = default_virutal_text
+  end
   vim.diagnostic.config({
     virtual_lines = not vim.diagnostic.config().virtual_lines,
-    virtual_text = not vim.diagnostic.config().virtual_text,
+    virtual_text = virtual_text,
   })
 end, { desc = "Toggle diagnostic virtual lines and virtual text" })
 

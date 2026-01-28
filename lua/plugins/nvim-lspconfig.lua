@@ -1,6 +1,15 @@
 return {
   "neovim/nvim-lspconfig",
+  setup = function()
+    vim.lsp.config.gopls.root_markers = { "go.work", "go.mod", ".git" }
+    vim.lsp.enable({ "gopls" })
+  end,
   opts = {
+    diagnostics = {
+      underline = true,
+      update_in_insert = false,
+      virtual_text = false,
+    },
     servers = {
       ["*"] = {
         keys = {

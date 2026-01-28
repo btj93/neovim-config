@@ -11,6 +11,7 @@ vim.opt.encoding = "utf-8"
 vim.diagnostic.config({
   -- Use the default configuration
   virtual_lines = true,
+  virtual_text = false,
 
   -- Alternatively, customize specific options
   -- virtual_lines = {
