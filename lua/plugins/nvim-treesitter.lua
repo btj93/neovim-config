@@ -2,18 +2,13 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     config = function()
-      vim.api.nvim_create_autocmd("User", {
-        pattern = "TSUpdate",
-        callback = function()
-          require("nvim-treesitter.parsers").gherkin = {
-            install_info = {
-              url = "https://github.com/binhtran432k/tree-sitter-gherkin",
-              branch = "main", -- only needed if different from default branch
-              queries = "queries/gherkin", -- also install queries from given directory
-            },
-          }
-        end,
-      })
+      require("nvim-treesitter.parsers").gherkin = {
+        install_info = {
+          url = "https://github.com/binhtran432k/tree-sitter-gherkin",
+          branch = "main", -- only needed if different from default branch
+          queries = "queries/gherkin", -- also install queries from given directory
+        },
+      }
 
       vim.treesitter.language.register("gherkin", { "feature", "cucumber" })
       vim.api.nvim_create_autocmd("FileType", {
