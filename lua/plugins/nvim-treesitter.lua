@@ -1,7 +1,25 @@
+-- Startup crash after updating
+-- https://github.com/folke/noice.nvim/issues/1188
+-- or remove ~/.local/share/nvim/site
 return {
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
+    build = ":TSUpdate",
     config = function()
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "TSUpdate",
+        callback = function()
+          require("nvim-treesitter.parsers").gherkin = {
+            install_info = {
+              url = "https://github.com/binhtran432k/tree-sitter-gherkin",
+              branch = "main", -- only needed if different from default branch
+              queries = "queries/gherkin", -- also install queries from given directory
+            },
+          }
+        end,
+      })
+
       require("nvim-treesitter.parsers").gherkin = {
         install_info = {
           url = "https://github.com/binhtran432k/tree-sitter-gherkin",

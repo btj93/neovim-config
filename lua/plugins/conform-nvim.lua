@@ -5,13 +5,21 @@ return {
     opts.formatters.sqlfluff = {
       args = { "format", "--dialect=mysql", "-" },
     }
-    opts.format_on_save = {
-      timeout_ms = 2500,
-      lsp_fallback = true,
-    }
+    -- opts.format_on_save = {
+    --   timeout_ms = 2500,
+    --   lsp_fallback = true,
+    -- }
     opts.formatters_by_ft = opts.formatters_by_ft or {}
     opts.formatters_by_ft.cucumber = { "prettierd", "injected" }
     opts.formatters_by_ft.javascript = { "prettierd", "prettier" }
+    opts.formatters_by_ft.markdown = { "markdownlint-cli2" }
+    opts.formatters["markdownlint-cli2"] = {
+      condition = function(_, ctx)
+        return true
+      end,
+    }
+
+    opts.lsp_fallback = true
 
     -- Ensure Prettier only runs if a config exists or override the condition
     opts.formatters.prettier = {
