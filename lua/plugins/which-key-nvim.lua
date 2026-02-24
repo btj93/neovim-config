@@ -4,7 +4,6 @@ return {
     spec = {
       { "<leader>h", group = "harpoon", icon = { icon = "󱡀", color = "MiniIconsCyan" } },
       { "<leader>m", group = "marks" },
-      { "<leader>a", group = "avante" },
     },
   },
 }

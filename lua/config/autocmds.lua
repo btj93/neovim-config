@@ -395,3 +395,11 @@ vim.api.nvim_create_user_command("Format", function(args)
   end
   require("conform").format({ async = true, lsp_format = "fallback", range = range })
 end, { range = true })
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "LazyUpdate",
+  callback = function()
+    print("Plugins have been updated!")
+    vim.cmd("TSUninstall all")
+  end,
+})

@@ -6,7 +6,7 @@ return {
     "nvim-treesitter/nvim-treesitter",
     lazy = false,
     build = ":TSUpdate",
-    config = function()
+    config = function(_, opts)
       vim.api.nvim_create_autocmd("User", {
         pattern = "TSUpdate",
         callback = function()
@@ -30,8 +30,10 @@ return {
 
       vim.treesitter.language.register("gherkin", { "feature", "cucumber" })
       vim.api.nvim_create_autocmd("FileType", {
-        pattern = { "cucumber", "go", "gomod", "javascript", "typescript", "lua", "bash", "markdown" },
+        pattern = { "cucumber", "go", "gomod", "javascript", "typescript", "lua", "bash", "markdown", "tsx" },
         callback = function()
+          vim.cmd("TSInstall go gomod javascript typescript tsx lua bash markdown gherkin")
+
           vim.treesitter.start()
         end,
       })
@@ -60,8 +62,6 @@ return {
       -- }
       --
       -- opts = vim.tbl_deep_extend("force", opts, gherkin_opts)
-
-      return opts
     end,
   },
 }
