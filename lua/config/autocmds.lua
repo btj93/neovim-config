@@ -75,6 +75,7 @@ autocmd({ "CursorMoved" }, {
       "term",
       "Syntax tree",
       "/opt/homebrew",
+      "✻ [Claude Code]",
     }
 
     for _, start in ipairs(starts) do

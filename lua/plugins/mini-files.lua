@@ -30,7 +30,14 @@ return {
     {
       "-",
       function()
-        MiniFiles.open(vim.api.nvim_buf_get_name(0), true)
+        local path = vim.api.nvim_buf_get_name(0)
+        while path ~= "" and vim.fn.filereadable(path) == 0 and vim.fn.isdirectory(path) == 0 do
+          path = vim.fn.fnamemodify(path, ":h")
+        end
+        if path == "" then
+          path = vim.fn.getcwd()
+        end
+        MiniFiles.open(path, true)
         -- defering to give time for git status to show
         vim.defer_fn(function()
           MiniFiles.reveal_cwd()
