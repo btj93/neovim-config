@@ -2,6 +2,19 @@ return {
   "coder/claudecode.nvim",
   dependencies = { "folke/snacks.nvim" },
   config = true,
+  opts = {
+    diff_opts = {
+      layout = "vertical", -- "vertical" or "horizontal"
+      open_in_new_tab = false,
+      keep_terminal_focus = true, -- If true, moves focus back to terminal after diff opens
+      hide_terminal_in_new_tab = false,
+      on_new_file_reject = "close_window", -- "keep_empty" or "close_window"
+
+      -- Legacy aliases (still supported):
+      -- vertical_split = true,
+      -- open_in_current_tab = true,
+    },
+  },
   keys = {
     { "<leader>a", nil, desc = "AI/Claude Code" },
     { "<leader>ac", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude" },
