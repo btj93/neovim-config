@@ -3,6 +3,12 @@ return {
   dependencies = { "folke/snacks.nvim" },
   config = true,
   opts = {
+    -- Hide tmux from Claude. Claude runs inside nvim's :terminal but inherits
+    -- $TMUX, so it wraps OSC 52 clipboard writes in tmux's DCS passthrough
+    -- (ESC P tmux; ... ESC \). nvim isn't tmux, can't unwrap it, and renders
+    -- the "52;c;<base64>" fragment on screen. Unsetting $TMUX/$TMUX_PANE makes
+    -- Claude emit a plain OSC 52 (or use native clipboard), which nvim handles.
+    terminal_cmd = "env -u TMUX -u TMUX_PANE claude",
     diff_opts = {
       layout = "vertical", -- "vertical" or "horizontal"
       open_in_new_tab = false,
