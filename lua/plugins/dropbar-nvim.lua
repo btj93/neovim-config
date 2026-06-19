@@ -17,6 +17,9 @@ return {
           pivots = "qwertyuiop",
         },
       },
+      symbol = {
+        on_click = false,
+      },
       menu = {
         keymaps = {
           ["h"] = "<C-w>q",
